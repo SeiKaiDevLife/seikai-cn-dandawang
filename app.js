@@ -148,9 +148,11 @@ createApp({
             distributePosts();
         };
 
-        // 瀑布流高度计算
-        const getImageUrl = (img) => {
-            return ASSET_BASE + (typeof img === 'string' ? img : img.url);
+        // 获取图片地址并处理 Data URL (临时发布的图片不支持加 ?v=后缀)
+        const getImageUrlWithHash = (img, hash) => {
+            const url = typeof img === 'string' ? img : img.url;
+            if (url.startsWith('data:')) return url;
+            return ASSET_BASE + url + '?v=' + hash;
         };
 
         let currentRenderId = 0;
@@ -167,7 +169,7 @@ createApp({
                 let ratio = 1; // 默认 1:1
                 if (post.images && post.images.length > 0) {
                     try {
-                        const imgUrl = getImageUrl(post.images[0]) + '?v=' + post.hash;
+                        const imgUrl = getImageUrlWithHash(post.images[0], post.hash);
                         ratio = await new Promise((resolve) => {
                             const img = new Image();
                             img.onload = () => resolve(img.height / img.width);
@@ -251,6 +253,78 @@ createApp({
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
         };
 
+        // 发布功能逻辑 (临时)
+        const isPublishOpen = ref(false);
+        const publishTitle = ref('');
+        const publishContent = ref('');
+        const publishImages = ref([]);
+        const fileInputRef = ref(null);
+
+        const openPublish = () => {
+            isPublishOpen.value = true;
+        };
+
+        const closePublish = () => {
+            isPublishOpen.value = false;
+            publishTitle.value = '';
+            publishContent.value = '';
+            publishImages.value = [];
+        };
+
+        const triggerImageUpload = () => {
+            if (fileInputRef.value) fileInputRef.value.click();
+        };
+
+        const handleImageSelect = (e) => {
+            const files = Array.from(e.target.files);
+            const remainingSlots = 9 - publishImages.value.length;
+            const filesToProcess = files.slice(0, remainingSlots);
+
+            filesToProcess.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    publishImages.value.push(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+            // 重置 input 以允许再次选择同一文件
+            e.target.value = '';
+        };
+
+        const removeImage = (idx) => {
+            publishImages.value.splice(idx, 1);
+        };
+
+        const canSubmit = Vue.computed(() => {
+            return publishImages.value.length > 0 && (publishTitle.value.trim() !== '' || publishContent.value.trim() !== '');
+        });
+
+        const submitPost = () => {
+            if (!canSubmit.value) return;
+
+            const newPost = {
+                id: "temp_" + Date.now(),
+                title: publishTitle.value.trim(),
+                content: publishContent.value.trim(),
+                timestamp: Date.now(),
+                images: [...publishImages.value],
+                hash: "temp_" + Date.now()
+            };
+
+            // 添加到所有推文列表头部
+            posts.value.unshift(newPost);
+            
+            // 如果在搜索模式下，或者直接刷新列表
+            if (isSearchActive.value) {
+                applySearch();
+            } else {
+                filteredPosts.value = posts.value;
+                distributePosts();
+            }
+
+            closePublish();
+        };
+
         onMounted(() => {
             checkLogin();
         });
@@ -280,7 +354,7 @@ createApp({
             loadAllMonths,
             formatDate,
             ASSET_BASE,
-            getImageUrl,
+            getImageUrlWithHash,
             openPost,
             closePost,
             selectedPost,
@@ -288,7 +362,19 @@ createApp({
             onSliderScroll,
             sliderRef,
             prevSlide,
-            nextSlide
+            nextSlide,
+            isPublishOpen,
+            publishTitle,
+            publishContent,
+            publishImages,
+            fileInputRef,
+            openPublish,
+            closePublish,
+            triggerImageUpload,
+            handleImageSelect,
+            removeImage,
+            canSubmit,
+            submitPost
         };
     }
 }).mount('#app');
