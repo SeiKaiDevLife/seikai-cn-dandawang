@@ -20,13 +20,11 @@
                 <h1 class="title">氮氮的相册</h1>
                 <p class="subtitle">SeiKai & echoofmine</p>
                 <form @submit.prevent="handleLogin" class="form">
-                    <input 
-                        type="text" 
-                        v-model="username"
-                        class="input"
-                        placeholder="请输入用户名..."
-                        required
-                    />
+                    <select v-model="username" class="input" required>
+                        <option value="" disabled>请选择用户名...</option>
+                        <option value="seikai">seikai</option>
+                        <option value="echo">echo</option>
+                    </select>
                     <input 
                         type="password" 
                         v-model="password"

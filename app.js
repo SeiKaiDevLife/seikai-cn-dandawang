@@ -25,20 +25,20 @@ createApp({
 
         const handleLogin = () => {
             const hash = CryptoJS.SHA256(password.value).toString();
-            // seikai_dandan 的 sha256
-            if (hash === 'a364239845ce376b1f2371457df07a04803d526fc8e658e4e7eeccfc83f70ed1') {
+            // 123456 的 sha256 值为 8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
+            const isValidUser = username.value === 'seikai' || username.value === 'echo';
+            
+            if (isValidUser && hash === '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92') {
                 isLoggedIn.value = true;
                 localStorage.setItem('isLoggedIn', 'true');
-                if (username.value) {
-                    localStorage.setItem('username', username.value);
-                }
+                localStorage.setItem('username', username.value);
                 password.value = '';
                 loadData();
             } else {
                 loginError.value = true;
                 setTimeout(() => {
                     loginError.value = false;
-                }, 2000);
+                }, 500);
             }
         };
 
