@@ -1435,19 +1435,19 @@ body {
 .fab-mini-btn:hover { filter: brightness(1.1); }
 
 /* Toe Positions forming a beautiful paw around the massive pad */
-.fab-menu.is-open .fab-action.action-3 { transform: translate(-80px, -20px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-3 { transform: translate(-90px, -10px) scale(1) !important; }
 .fab-menu.is-open .fab-action.action-2 { transform: translate(-65px, -65px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-1 { transform: translate(-20px, -80px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-1 { transform: translate(-10px, -90px) scale(1) !important; }
 
 /* Toe Rotations */
-.fab-action.action-3 .fab-mini-btn { transform: rotate(-75deg); }
+.fab-action.action-3 .fab-mini-btn { transform: rotate(-85deg); }
 .fab-action.action-2 .fab-mini-btn { transform: rotate(-45deg); }
-.fab-action.action-1 .fab-mini-btn { transform: rotate(-15deg); }
+.fab-action.action-1 .fab-mini-btn { transform: rotate(-5deg); }
 
 /* Hover scale combined with rotation */
-.fab-action.action-3 .fab-mini-btn:hover { transform: rotate(-75deg) scale(1.1); }
+.fab-action.action-3 .fab-mini-btn:hover { transform: rotate(-85deg) scale(1.1); }
 .fab-action.action-2 .fab-mini-btn:hover { transform: rotate(-45deg) scale(1.1); }
-.fab-action.action-1 .fab-mini-btn:hover { transform: rotate(-15deg) scale(1.1); }
+.fab-action.action-1 .fab-mini-btn:hover { transform: rotate(-5deg) scale(1.1); }
 
 /* Ensure legacy elements are hidden */
 .fab-paw-closed-state { display: none !important; }
