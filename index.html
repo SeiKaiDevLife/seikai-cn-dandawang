@@ -56,6 +56,24 @@
                 </div>
             </div>
 
+            <!-- 月份筛选器 -->
+            <div class="month-filter" v-if="meta.months && meta.months.length > 0">
+                <button 
+                    class="filter-btn" 
+                    :class="{ active: currentMonthId === 'all' }" 
+                    @click="loadAllMonths()">
+                    全部动态
+                </button>
+                <button 
+                    v-for="m in meta.months" 
+                    :key="m.id" 
+                    class="filter-btn" 
+                    :class="{ active: currentMonthId === m.id }" 
+                    @click="loadMonth(m)">
+                    {{ m.id.replace('-', '年') + '月' }} ({{ m.postCount }})
+                </button>
+            </div>
+
             <!-- 小红书风格瀑布流展示区 -->
             <div class="waterfall-container">
                 <div class="timeline-post" v-for="post in posts" :key="post.id">
@@ -83,6 +101,6 @@
             </div>
         </div>
     </div>
-    <script src="app.js?v=2"></script>
+    <script src="app.js?v=4"></script>
 </body>
 </html>

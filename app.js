@@ -45,6 +45,35 @@ createApp({
             posts.value = [];
         };
 
+        const loadMonth = async (m) => {
+            currentMonthId.value = m.id;
+            try {
+                const postRes = await fetch(ASSET_BASE + m.jsonPath);
+                if (postRes.ok) {
+                    posts.value = await postRes.json();
+                }
+            } catch (e) {
+                console.error("加载月份失败", e);
+            }
+        };
+
+        const loadAllMonths = async () => {
+            currentMonthId.value = 'all';
+            let allPosts = [];
+            try {
+                // 并发请求所有月份的JSON
+                const reqs = meta.value.months.map(m => fetch(ASSET_BASE + m.jsonPath).then(r => r.json()));
+                const results = await Promise.all(reqs);
+                results.forEach(res => {
+                    allPosts = allPosts.concat(res);
+                });
+                // 按时间倒序排序合并后的所有文章
+                posts.value = allPosts.sort((a, b) => b.timestamp - a.timestamp);
+            } catch (e) {
+                console.error("加载全部数据失败", e);
+            }
+        };
+
         const loadData = async () => {
             try {
                 // 请求全局索引
@@ -52,12 +81,8 @@ createApp({
                 if (metaRes.ok) {
                     meta.value = await metaRes.json();
                     if (meta.value.months.length > 0) {
-                        // 默认加载最新一个月的数据
-                        currentMonthId.value = meta.value.months[0].id;
-                        const postRes = await fetch(ASSET_BASE + meta.value.months[0].jsonPath);
-                        if (postRes.ok) {
-                            posts.value = await postRes.json();
-                        }
+                        // 默认加载全部动态
+                        await loadAllMonths();
                     }
                 }
             } catch (e) {
@@ -83,6 +108,9 @@ createApp({
             logout,
             meta,
             posts,
+            currentMonthId,
+            loadMonth,
+            loadAllMonths,
             formatDate,
             ASSET_BASE
         };
