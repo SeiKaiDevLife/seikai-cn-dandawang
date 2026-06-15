@@ -136,8 +136,17 @@ createApp({
             }
         };
 
+        const currentSlideIndex = ref(0);
+
+        const onSliderScroll = (e) => {
+            const scrollLeft = e.target.scrollLeft;
+            const width = e.target.clientWidth;
+            currentSlideIndex.value = Math.round(scrollLeft / width);
+        };
+
         const openPost = (post) => {
             selectedPost.value = post;
+            currentSlideIndex.value = 0;
             window.scrollTo({ top: 0, behavior: 'instant' });
         };
 
@@ -172,7 +181,9 @@ createApp({
             getImageUrl,
             openPost,
             closePost,
-            selectedPost
+            selectedPost,
+            currentSlideIndex,
+            onSliderScroll
         };
     }
 }).mount('#app');

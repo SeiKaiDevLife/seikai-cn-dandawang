@@ -105,32 +105,40 @@
 
             <!-- 独立的详细图文界面 -->
             <div class="detail-view" v-if="selectedPost">
-                <!-- 导航栏 -->
-                <div class="detail-nav">
-                    <button class="back-btn" @click="closePost">
-                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        返回首页
+                <!-- 顶部滑动图片区 -->
+                <div class="detail-slider-container">
+                    <button class="floating-back-btn" @click="closePost">
+                        <svg viewBox="0 0 24 24" width="28" height="28" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
                     </button>
+                    
+                    <div class="detail-slider" @scroll="onSliderScroll">
+                        <div class="slider-item" v-for="(img, index) in selectedPost.images" :key="index">
+                            <img :src="getImageUrl(img) + '?v=' + selectedPost.hash" loading="lazy">
+                        </div>
+                    </div>
+                    
+                    <!-- 图片指示器 (例如: 1/6) -->
+                    <div class="slider-indicator" v-if="selectedPost.images && selectedPost.images.length > 1">
+                        {{ currentSlideIndex + 1 }} / {{ selectedPost.images.length }}
+                    </div>
                 </div>
 
                 <!-- 详细内容区 -->
                 <div class="detail-content">
-                    <div class="detail-images-list">
-                        <img v-for="(img, index) in selectedPost.images" :key="index" :src="getImageUrl(img) + '?v=' + selectedPost.hash" loading="lazy">
-                    </div>
-                    
                     <div class="detail-text-area">
                         <h1 class="detail-title">{{ selectedPost.title }}</h1>
-                        <p class="detail-date">{{ formatDate(selectedPost.timestamp) }}</p>
                         <div class="detail-body" v-if="selectedPost.content">
                             {{ selectedPost.content }}
                         </div>
+                        <p class="detail-date">{{ formatDate(selectedPost.timestamp) }}</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=8"></script>
+    <script src="app.js?v=9"></script>
 </body>
 </html>
