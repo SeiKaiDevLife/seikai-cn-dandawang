@@ -26,12 +26,14 @@ createApp({
         const handleLogin = () => {
             const hash = CryptoJS.SHA256(password.value).toString();
             // 123456 的 sha256 值为 8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
-            const isValidUser = username.value === 'seikai' || username.value === 'echo';
+            
+            const cleanUser = username.value.trim().toLowerCase();
+            const isValidUser = cleanUser === 'seikai' || cleanUser === 'echo';
             
             if (isValidUser && hash === '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92') {
                 isLoggedIn.value = true;
                 localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('username', username.value);
+                localStorage.setItem('username', cleanUser);
                 password.value = '';
                 loadData();
             } else {
