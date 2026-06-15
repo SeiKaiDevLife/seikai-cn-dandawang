@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=39">
+    <link rel="stylesheet" href="index.css?v=40">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -325,7 +325,8 @@
                                     :style="{ gridRow: `${slot.r + 1} / span ${slot.rowSpan}`, gridColumn: `${slot.c + 1} / span ${slot.colSpan}` }"
                                     @mousedown="onDragStart(slot)"
                                     @mouseenter="onMouseEnter(slot)"
-                                    @touchstart.passive="onDragStart(slot)">
+                                    @touchstart.passive="onDragStart(slot)"
+                                    @click="onSlotClick(slot)">
                                     <div class="slot-placeholder" v-if="!slot.image">
                                         <span v-if="customGridState === 'edit-layout'"></span>
                                         <span v-else>+ 照片</span>
@@ -364,6 +365,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=39"></script>
+    <script src="app.js?v=40"></script>
 </body>
 </html>

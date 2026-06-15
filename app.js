@@ -288,11 +288,7 @@ createApp({
         const dragCurrentSlot = ref(null);
 
         const onDragStart = (slot) => {
-            if (customGridState.value !== 'edit-layout') {
-                currentUploadSlotId.value = slot.id;
-                if (fileInputRef.value) fileInputRef.value.click();
-                return;
-            }
+            if (customGridState.value !== 'edit-layout') return;
             if (slot.rowSpan > 1 || slot.colSpan > 1) {
                 unmergeSlot(slot);
                 return;
@@ -300,6 +296,13 @@ createApp({
             isDragging.value = true;
             dragStartSlot.value = slot;
             dragCurrentSlot.value = slot;
+        };
+
+        const onSlotClick = (slot) => {
+            if (customGridState.value !== 'edit-layout') {
+                currentUploadSlotId.value = slot.id;
+                if (fileInputRef.value) fileInputRef.value.click();
+            }
         };
 
         const onMouseEnter = (slot) => {
@@ -546,6 +549,7 @@ createApp({
             customGridState,
             initCustomGrid,
             onDragStart,
+            onSlotClick,
             onMouseEnter,
             onTouchMove,
             onDragEnd,
