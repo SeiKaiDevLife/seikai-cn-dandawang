@@ -90,20 +90,60 @@ createApp({
         // 瀑布流左右列
         const leftCol = ref([]);
         const rightCol = ref([]);
+        const selectedPost = ref(null); // 当前正在查看的图文
 
-        // 简单的左右交替分配算法，保证 A 左 B 右 C 左 D 右 的阅读顺序
-        const distributePosts = () => {
+        // 兼容数据格式
+        const getImageUrl = (img) => {
+            return ASSET_BASE + (typeof img === 'string' ? img : img.url);
+        };
+
+        // 真正的瀑布流高度计算：预加载首图获取高度比例，然后分配给较矮的列
+        const distributePosts = async () => {
             leftCol.value = [];
             rightCol.value = [];
-            posts.value.forEach((post, index) => {
-                // 如果后端没有 hash，临时补一个防止图片报错
+            let leftHeight = 0;
+            let rightHeight = 0;
+
+            for (const post of posts.value) {
                 if (!post.hash) post.hash = post.timestamp;
-                if (index % 2 === 0) {
+                
+                let ratio = 1; // 默认 1:1
+                if (post.images && post.images.length > 0) {
+                    try {
+                        const imgUrl = getImageUrl(post.images[0]) + '?v=' + post.hash;
+                        ratio = await new Promise((resolve) => {
+                            const img = new Image();
+                            img.onload = () => resolve(img.height / img.width);
+                            img.onerror = () => resolve(1);
+                            img.src = imgUrl;
+                        });
+                    } catch (e) {
+                        ratio = 1;
+                    }
+                }
+                
+                // 估算卡片高度：图片按比例占的高度 + 文字信息大致高度(100)
+                const estimatedHeight = ratio * 300 + 100;
+
+                // 判断哪列矮，放在矮的那一列
+                if (leftHeight <= rightHeight) {
                     leftCol.value.push(post);
+                    leftHeight += estimatedHeight;
                 } else {
                     rightCol.value.push(post);
+                    rightHeight += estimatedHeight;
                 }
-            });
+            }
+        };
+
+        const openPost = (post) => {
+            selectedPost.value = post;
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        };
+
+        const closePost = () => {
+            selectedPost.value = null;
+            document.body.style.overflow = '';
         };
 
         const formatDate = (ts) => {
@@ -129,7 +169,11 @@ createApp({
             loadMonth,
             loadAllMonths,
             formatDate,
-            ASSET_BASE
+            ASSET_BASE,
+            getImageUrl,
+            openPost,
+            closePost,
+            selectedPost
         };
     }
 }).mount('#app');
