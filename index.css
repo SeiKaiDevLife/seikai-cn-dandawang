@@ -1206,7 +1206,8 @@ body {
   background: #e9ecef;
   padding: 4px;
   border-radius: 8px;
-  width: 100%;
+  width: 70%;
+  margin: 0 auto;
 }
 
 .custom-slot {
