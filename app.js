@@ -246,9 +246,6 @@ createApp({
                     });
                 }
             });
-            setTimeout(() => {
-                window.scrollTo({ top: 0, behavior: 'auto' });
-            }, 0);
         };
 
         const closePost = () => {
