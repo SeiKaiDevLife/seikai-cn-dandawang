@@ -233,7 +233,7 @@ createApp({
         };
 
         const openPost = (post, index = 0) => {
-            scrollPosition.value = window.scrollY || document.documentElement.scrollTop;
+            document.body.style.overflow = 'hidden';
             selectedPost.value = post;
             currentSlideIndex.value = index;
             
@@ -253,10 +253,8 @@ createApp({
         };
 
         const closePost = () => {
+            document.body.style.overflow = '';
             selectedPost.value = null;
-            setTimeout(() => {
-                window.scrollTo({ top: scrollPosition.value, behavior: 'auto' });
-            }, 0);
         };
 
         const formatDate = (ts) => {
@@ -469,7 +467,7 @@ createApp({
                     return a.c - b.c;
                 });
                 finalImages = sortedSlots.map(s => s.image);
-                customGridData = customGridSlots.value;
+                customGridData = sortedSlots;
                 customRows = customGridRows.value;
             } else {
                 finalImages = [...publishImages.value];

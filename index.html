@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=36">
+    <link rel="stylesheet" href="index.css?v=37">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -42,7 +42,7 @@
         <!-- 主界面的所有内容 -->
         <div class="main-app" v-else>
             <!-- 首页视图 (瀑布流展示)，用 v-show 保证从详情返回时不刷新不丢失高度 -->
-            <div class="home-view" v-show="!selectedPost">
+            <div class="home-view">
                 
                 <!-- 英雄头图 -->
                 <div class="hero-section">
@@ -129,7 +129,7 @@
                             </div>
                             <!-- 自定义拼图封面 -->
                             <div class="post-custom-grid" v-if="post.layout === 'custom' && post.customGridData" :style="{ gridTemplateRows: `repeat(${post.customRows}, 1fr)` }">
-                                <div class="grid-cover-cell" v-for="(slot, idx) in post.customGridData" :key="idx" :style="{ gridRow: `span ${slot.rowSpan}`, gridColumn: `span ${slot.colSpan}` }" @click="openPost(post, idx)">
+                                <div class="grid-cover-cell" v-for="(slot, idx) in post.customGridData" :key="idx" :style="{ gridRow: `${slot.r + 1} / span ${slot.rowSpan}`, gridColumn: `${slot.c + 1} / span ${slot.colSpan}` }" @click="openPost(post, idx)">
                                     <img :src="getImageUrlWithHash(slot.image, post.hash)" loading="lazy">
                                 </div>
                             </div>
@@ -187,7 +187,8 @@
             </div>
 
             <!-- 独立的详细图文界面 -->
-            <div class="detail-view" v-if="selectedPost">
+            <transition name="page-slide">
+                <div class="detail-view" v-if="selectedPost">
                 <!-- 顶部媒体区 (统一使用滑动条，不区分九宫格) -->
                 <div class="detail-media-area">
                     <button class="floating-back-btn" @click="closePost">
@@ -227,8 +228,9 @@
                         </div>
                         <p class="detail-date">{{ formatDate(selectedPost.timestamp) }}</p>
                     </div>
+                    </div>
                 </div>
-            </div>
+                </transition>
 
             <!-- 悬浮菜单的背景遮罩 -->
             <div class="fab-overlay" v-if="isFabOpen" @click="toggleFab"></div>
@@ -362,6 +364,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=36"></script>
+    <script src="app.js?v=37"></script>
 </body>
 </html>

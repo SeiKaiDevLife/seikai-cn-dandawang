@@ -381,13 +381,25 @@ body {
   font-weight: 500;
 }
 
-/* 独立的详细图文界面 */
+/* 详细图文界面 */
 .detail-view {
-  width: 100%;
-  min-height: 100vh;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
   background: #fff;
+  z-index: 100;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
+}
+
+/* 翻页滑动动画 (进入时从右侧滑入，离开时向右侧滑出) */
+.page-slide-enter-active, .page-slide-leave-active {
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.page-slide-enter-from, .page-slide-leave-to {
+  transform: translateX(100%);
 }
 
 /* 顶部滑动大图区 */
