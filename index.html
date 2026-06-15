@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=14">
+    <link rel="stylesheet" href="index.css?v=15">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -44,14 +44,6 @@
             <!-- 首页视图 (瀑布流展示)，用 v-show 保证从详情返回时不刷新不丢失高度 -->
             <div class="home-view" v-show="!selectedPost">
                 
-                <!-- 顶部浮动搜索入口 -->
-                <div class="search-bar-wrapper" @click="openSearch">
-                    <div class="search-bar-pill">
-                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <span>搜索图文关键词或按时间筛选...</span>
-                    </div>
-                </div>
-
                 <!-- 英雄头图 -->
                 <div class="hero-section">
                     <div class="hero-image-placeholder"></div>
@@ -70,8 +62,23 @@
                     <div class="stats-row">
                         <div class="stat-item">
                             <span class="stat-num">{{ meta.totalPosts || 0 }}</span>
-                            <span class="stat-label">相册动态</span>
+                            <span class="stat-label">相册图文</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- 嵌入式搜索与筛选条 -->
+                <div class="action-bar-wrapper">
+                    <div class="action-bar">
+                        <input type="text" class="search-input" v-model="searchInput" placeholder="搜索关键词..." @keyup.enter="applySearch">
+                        <input type="date" class="date-input" v-model="startDateInput">
+                        <span style="color: #888;">至</span>
+                        <input type="date" class="date-input" v-model="endDateInput">
+                        <button class="search-btn" @click="applySearch">搜索图文</button>
+                    </div>
+                    <div class="search-status" v-if="isSearchActive">
+                        <span>搜索结果: {{ searchStatusText }} (共 {{ filteredPosts.length }} 篇)</span>
+                        <button class="clear-search-btn" @click="clearSearch">清除条件</button>
                     </div>
                 </div>
 
@@ -162,39 +169,9 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 全屏搜索和筛选扩展页 -->
-            <div class="search-overlay" v-if="isSearchOpen">
-                <div class="search-header">
-                    <div class="search-input-group">
-                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="#888" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" v-model="searchQuery" placeholder="输入你想搜索的内容..." ref="searchInput" autofocus>
-                        <button class="clear-btn" v-if="searchQuery" @click="searchQuery = ''">✕</button>
-                    </div>
-                    <button class="cancel-btn" @click="closeSearch">取消</button>
-                </div>
-                
-                <div class="search-filters">
-                    <h3>按时间筛选</h3>
-                    <div class="month-chips">
-                        <button 
-                            :class="['chip', { active: currentMonthId === 'all' }]" 
-                            @click="filterByMonth('all')">
-                            全部时间
-                        </button>
-                        <button 
-                            v-for="m in meta.months" 
-                            :key="m.id"
-                            :class="['chip', { active: currentMonthId === m.id }]"
-                            @click="filterByMonth(m.id)">
-                            {{ m.id }}
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=14"></script>
+    <script src="app.js?v=15"></script>
 </body>
 </html>

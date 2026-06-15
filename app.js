@@ -72,7 +72,13 @@ createApp({
                     allPosts = allPosts.concat(res);
                 });
                 posts.value = allPosts.sort((a, b) => b.timestamp - a.timestamp);
-                distributePosts();
+                
+                if (isSearchActive.value) {
+                    applySearch();
+                } else {
+                    filteredPosts.value = posts.value;
+                    distributePosts();
+                }
             } catch (e) {
                 console.error("加载全部失败", e);
             }
@@ -97,53 +103,59 @@ createApp({
         const rightCol = ref([]);
         const selectedPost = ref(null);
 
-        // 搜索扩展页逻辑
-        const isSearchOpen = ref(false);
-        const searchQuery = ref('');
-        
-        const openSearch = () => {
-            isSearchOpen.value = true;
-        };
+        // 搜索功能替换为内嵌式
+        const searchInput = ref('');
+        const startDateInput = ref('');
+        const endDateInput = ref('');
+        const isSearchActive = ref(false);
+        const searchStatusText = ref('');
+        const filteredPosts = ref([]);
 
-        const closeSearch = () => {
-            isSearchOpen.value = false;
-        };
-
-        const filterByMonth = async (monthId) => {
-            if (monthId === 'all') {
-                await loadAllMonths();
-            } else {
-                const m = meta.value.months.find(x => x.id === monthId);
-                if (m) await loadMonth(m);
-            }
-            closeSearch();
-        };
-
-        // 数据过滤监听
-        const filteredPosts = Vue.computed(() => {
+        const applySearch = () => {
+            isSearchActive.value = true;
             let res = posts.value;
-            if (searchQuery.value.trim()) {
-                const q = searchQuery.value.trim().toLowerCase();
-                res = res.filter(p => 
-                    (p.title && p.title.toLowerCase().includes(q)) || 
-                    (p.content && p.content.toLowerCase().includes(q))
-                );
-            }
-            return res;
-        });
+            
+            const q = searchInput.value.trim().toLowerCase();
+            const start = startDateInput.value ? new Date(startDateInput.value).getTime() : 0;
+            const end = endDateInput.value ? new Date(endDateInput.value + 'T23:59:59.999').getTime() : Infinity;
 
-        Vue.watch(filteredPosts, () => {
+            res = res.filter(p => {
+                const matchKeyword = q ? ((p.title && p.title.toLowerCase().includes(q)) || (p.content && p.content.toLowerCase().includes(q))) : true;
+                const matchTime = p.timestamp >= start && p.timestamp <= end;
+                return matchKeyword && matchTime;
+            });
+            
+            filteredPosts.value = res;
+            
+            let status = [];
+            if (q) status.push('关键词"' + q + '"');
+            if (startDateInput.value || endDateInput.value) {
+                status.push('日期 ' + (startDateInput.value || '最早') + ' 至 ' + (endDateInput.value || '最新'));
+            }
+            searchStatusText.value = status.join('，') || '所有图文';
+            
             distributePosts();
-        });
+        };
+
+        const clearSearch = () => {
+            searchInput.value = '';
+            startDateInput.value = '';
+            endDateInput.value = '';
+            isSearchActive.value = false;
+            filteredPosts.value = posts.value;
+            distributePosts();
+        };
 
         // 瀑布流高度计算
         const getImageUrl = (img) => {
             return ASSET_BASE + (typeof img === 'string' ? img : img.url);
         };
 
+        let currentRenderId = 0;
         const distributePosts = async () => {
-            leftCol.value = [];
-            rightCol.value = [];
+            const renderId = ++currentRenderId;
+            let tempLeft = [];
+            let tempRight = [];
             let leftHeight = 0;
             let rightHeight = 0;
 
@@ -165,17 +177,24 @@ createApp({
                     }
                 }
                 
-                // 估算卡片高度：图片按比例占的高度 + 文字信息大致高度(100)
+                if (renderId !== currentRenderId) return; // 拦截过期渲染（解决8个图文的竞态Bug）
+
+                // 假设卡片高度：图片按比例占用高度 + 底部信息固定高度(100)
                 const estimatedHeight = ratio * 300 + 100;
 
-                // 判断哪列矮，放在矮的那一列
+                // 判断哪列较矮，放入哪一列
                 if (leftHeight <= rightHeight) {
-                    leftCol.value.push(post);
+                    tempLeft.push(post);
                     leftHeight += estimatedHeight;
                 } else {
-                    rightCol.value.push(post);
+                    tempRight.push(post);
                     rightHeight += estimatedHeight;
                 }
+            }
+            
+            if (renderId === currentRenderId) {
+                leftCol.value = tempLeft;
+                rightCol.value = tempRight;
             }
         };
 
@@ -245,11 +264,14 @@ createApp({
             posts,
             leftCol,
             rightCol,
-            isSearchOpen,
-            searchQuery,
-            openSearch,
-            closeSearch,
-            filterByMonth,
+            filteredPosts,
+            searchInput,
+            startDateInput,
+            endDateInput,
+            isSearchActive,
+            searchStatusText,
+            applySearch,
+            clearSearch,
             currentMonthId,
             loadMonth,
             loadAllMonths,
