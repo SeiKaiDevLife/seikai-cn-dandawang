@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=41">
+    <link rel="stylesheet" href="index.css?v=42">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -321,7 +321,7 @@
                                     v-for="slot in customGridSlots" 
                                     :key="slot.id"
                                     :data-id="slot.id"
-                                    :class="{ 'is-drag-preview': isSlotInDragPreview(slot), 'has-image': slot.image }"
+                                    :class="{ 'is-drag-preview': isSlotInDragPreview(slot), 'has-image': slot.image, 'is-img-drag-target': dragImgCurrentId === slot.id && dragImgId !== slot.id }"
                                     :style="{ gridRow: `${slot.r + 1} / span ${slot.rowSpan}`, gridColumn: `${slot.c + 1} / span ${slot.colSpan}` }"
                                     @mousedown="onDragStart(slot)"
                                     @mouseenter="onMouseEnter(slot)"
@@ -340,7 +340,15 @@
                         <!-- 默认图片上传区 -->
                         <div class="image-upload-section" v-else>
                             <div class="image-preview-list">
-                                <div class="image-preview-item" v-for="(img, idx) in publishImages" :key="idx">
+                                <div class="image-preview-item" v-for="(img, idx) in publishImages" :key="idx"
+                                     draggable="true"
+                                     @dragstart="onNormalDragStart($event, idx)"
+                                     @dragover="onNormalDragOver($event, idx)"
+                                     @drop="onNormalDrop($event, idx)"
+                                     @touchstart.passive="onNormalTouchStart($event, idx)"
+                                     @touchmove.prevent="onNormalTouchMove"
+                                     @touchend="onNormalTouchEnd"
+                                     :class="{ 'is-drag-target': normalDragCurrentIndex === idx && normalDragIndex !== idx }">
                                     <img :src="img" />
                                     <button class="remove-img-btn" @click="removeImage(idx)">✕</button>
                                 </div>
@@ -365,6 +373,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=41"></script>
+    <script src="app.js?v=42"></script>
 </body>
 </html>

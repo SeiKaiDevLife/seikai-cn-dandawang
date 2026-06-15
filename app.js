@@ -286,9 +286,18 @@ createApp({
         const isDragging = ref(false);
         const dragStartSlot = ref(null);
         const dragCurrentSlot = ref(null);
+        
+        const dragImgId = ref(null);
+        const dragImgCurrentId = ref(null);
 
         const onDragStart = (slot) => {
-            if (customGridState.value !== 'edit-layout') return;
+            if (customGridState.value !== 'edit-layout') {
+                if (slot.image) {
+                    dragImgId.value = slot.id;
+                    dragImgCurrentId.value = slot.id;
+                }
+                return;
+            }
             if (slot.rowSpan > 1 || slot.colSpan > 1) {
                 unmergeSlot(slot);
                 return;
@@ -300,17 +309,35 @@ createApp({
 
         const onSlotClick = (slot) => {
             if (customGridState.value !== 'edit-layout') {
+                if (dragImgId.value && dragImgId.value !== dragImgCurrentId.value) return; // Ignore click if swapped
                 currentUploadSlotId.value = slot.id;
                 if (fileInputRef.value) fileInputRef.value.click();
             }
         };
 
         const onMouseEnter = (slot) => {
+            if (customGridState.value !== 'edit-layout') {
+                if (dragImgId.value) dragImgCurrentId.value = slot.id;
+                return;
+            }
             if (!isDragging.value) return;
             dragCurrentSlot.value = slot;
         };
 
         const onTouchMove = (e) => {
+            if (customGridState.value !== 'edit-layout') {
+                if (!dragImgId.value) return;
+                const touch = e.touches[0];
+                const elem = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (elem) {
+                    const slotElem = elem.closest('.custom-slot');
+                    if (slotElem) {
+                        const targetId = slotElem.getAttribute('data-id');
+                        if (targetId) dragImgCurrentId.value = targetId;
+                    }
+                }
+                return;
+            }
             if (!isDragging.value) return;
             const touch = e.touches[0];
             const elem = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -325,6 +352,22 @@ createApp({
         };
 
         const onDragEnd = () => {
+            if (customGridState.value !== 'edit-layout') {
+                if (dragImgId.value && dragImgCurrentId.value && dragImgId.value !== dragImgCurrentId.value) {
+                    const sourceSlot = customGridSlots.value.find(s => s.id === dragImgId.value);
+                    const targetSlot = customGridSlots.value.find(s => s.id === dragImgCurrentId.value);
+                    if (sourceSlot && targetSlot) {
+                        const temp = sourceSlot.image;
+                        sourceSlot.image = targetSlot.image;
+                        targetSlot.image = temp;
+                    }
+                }
+                setTimeout(() => {
+                    dragImgId.value = null;
+                    dragImgCurrentId.value = null;
+                }, 50);
+                return;
+            }
             if (!isDragging.value) return;
             isDragging.value = false;
             if (dragStartSlot.value && dragCurrentSlot.value && dragStartSlot.value !== dragCurrentSlot.value) {
@@ -416,14 +459,24 @@ createApp({
             
             if (publishMode.value === 'custom') {
                 if (files.length > 0 && currentUploadSlotId.value) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        const slot = customGridSlots.value.find(s => s.id === currentUploadSlotId.value);
-                        if (slot) slot.image = ev.target.result;
-                        e.target.value = '';
-                    };
-                    reader.readAsDataURL(files[0]);
+                    const sortedSlots = [...customGridSlots.value].sort((a,b) => {
+                        if (a.r !== b.r) return a.r - b.r;
+                        return a.c - b.c;
+                    });
+                    let startIndex = sortedSlots.findIndex(s => s.id === currentUploadSlotId.value);
+                    if (startIndex === -1) startIndex = 0;
+                    
+                    const filesToProcess = files.slice(0, sortedSlots.length - startIndex);
+                    filesToProcess.forEach((file, index) => {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            sortedSlots[startIndex + index].image = ev.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                    currentUploadSlotId.value = null;
                 }
+                e.target.value = '';
             } else {
                 const remainingSlots = 99 - publishImages.value.length; // 允许超过9张
                 const filesToProcess = files.slice(0, remainingSlots);
@@ -443,7 +496,57 @@ createApp({
             publishImages.value.splice(idx, 1);
         };
 
+        const normalDragIndex = ref(null);
+        const normalDragCurrentIndex = ref(null);
+
+        const onNormalDragStart = (e, idx) => {
+            normalDragIndex.value = idx;
+            if(e.dataTransfer) e.dataTransfer.setData('text/plain', idx);
+        };
+        const onNormalDragOver = (e, idx) => {
+            e.preventDefault();
+            normalDragCurrentIndex.value = idx;
+        };
+        const onNormalDrop = (e, idx) => {
+            e.preventDefault();
+            let from = normalDragIndex.value;
+            if (from !== null && from !== idx) {
+                const item = publishImages.value.splice(from, 1)[0];
+                publishImages.value.splice(idx, 0, item);
+            }
+            normalDragIndex.value = null;
+            normalDragCurrentIndex.value = null;
+        };
+        const onNormalTouchStart = (e, idx) => {
+            normalDragIndex.value = idx;
+        };
+        const onNormalTouchMove = (e) => {
+            if (normalDragIndex.value === null) return;
+            const touch = e.touches[0];
+            const el = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (el) {
+                const item = el.closest('.image-preview-item');
+                if (item) {
+                    const idxStr = item.getAttribute('data-idx');
+                    if (idxStr !== null) {
+                        normalDragCurrentIndex.value = parseInt(idxStr);
+                    }
+                }
+            }
+        };
+        const onNormalTouchEnd = () => {
+            let from = normalDragIndex.value;
+            let to = normalDragCurrentIndex.value;
+            if (from !== null && to !== null && from !== to) {
+                const item = publishImages.value.splice(from, 1)[0];
+                publishImages.value.splice(to, 0, item);
+            }
+            normalDragIndex.value = null;
+            normalDragCurrentIndex.value = null;
+        };
+
         const canSubmit = Vue.computed(() => {
+            if (!publishTitle.value.trim() || !publishContent.value.trim()) return false;
             if (publishMode.value === 'custom') {
                 return customGridState.value === 'fill-images' && customGridSlots.value.every(s => s.image !== null);
             }
@@ -559,6 +662,16 @@ createApp({
             triggerImageUpload,
             handleImageSelect,
             removeImage,
+            dragImgId,
+            dragImgCurrentId,
+            normalDragIndex,
+            normalDragCurrentIndex,
+            onNormalDragStart,
+            onNormalDragOver,
+            onNormalDrop,
+            onNormalTouchStart,
+            onNormalTouchMove,
+            onNormalTouchEnd,
             canSubmit,
             submitPost
         };
