@@ -1435,9 +1435,9 @@ body {
 .fab-mini-btn:hover { filter: brightness(1.1); }
 
 /* Toe Positions forming a beautiful paw around the massive pad */
-.fab-menu.is-open .fab-action.action-3 { transform: translate(-75px, -7px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-2 { transform: translate(-53px, -53px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-1 { transform: translate(-7px, -75px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-3 { transform: translate(-70px, -2px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-2 { transform: translate(-48px, -48px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-1 { transform: translate(-2px, -70px) scale(1) !important; }
 
 /* Toe Rotations */
 .fab-action.action-3 .fab-mini-btn { transform: rotate(-85deg); }
