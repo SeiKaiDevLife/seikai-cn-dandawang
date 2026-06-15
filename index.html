@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=16">
+    <link rel="stylesheet" href="index.css?v=17">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -67,18 +67,42 @@
                     </div>
                 </div>
 
-                <!-- 嵌入式搜索与筛选条 -->
-                <div class="action-bar-wrapper">
-                    <div class="action-bar">
-                        <input type="text" class="search-input" v-model="searchInput" placeholder="搜索关键词..." @keyup.enter="applySearch">
-                        <input type="date" class="date-input" v-model="startDateInput">
-                        <span style="color: #888;">至</span>
-                        <input type="date" class="date-input" v-model="endDateInput">
-                        <button class="search-btn" @click="applySearch">搜索图文</button>
+                <!-- 嵌入式悬浮搜索区 (高级美化版) -->
+                <div class="elegant-search-section">
+                    <div class="search-bar-container">
+                        <div class="search-input-box">
+                            <svg class="icon-search" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" v-model="searchInput" placeholder="搜索图文关键词..." @keyup.enter="applySearch">
+                            
+                            <div class="filter-toggle" @click="showDateFilter = !showDateFilter" :class="{active: showDateFilter || startDateInput || endDateInput}">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                            </div>
+                            
+                            <button class="search-action-btn" @click="applySearch">搜索</button>
+                        </div>
+
+                        <!-- 抽屉式日期筛选器 -->
+                        <div class="date-filter-drawer" v-show="showDateFilter">
+                            <div class="drawer-arrow"></div>
+                            <div class="date-inputs-row">
+                                <div class="date-field">
+                                    <span class="date-lbl">起始时间</span>
+                                    <input type="date" v-model="startDateInput">
+                                </div>
+                                <div class="date-divider">-</div>
+                                <div class="date-field">
+                                    <span class="date-lbl">结束时间</span>
+                                    <input type="date" v-model="endDateInput">
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="search-status" v-if="isSearchActive">
-                        <span>搜索结果: {{ searchStatusText }} (共 {{ filteredPosts.length }} 篇)</span>
-                        <button class="clear-search-btn" @click="clearSearch">清除条件</button>
+                    
+                    <div class="active-filter-tags" v-if="isSearchActive">
+                        <span class="filter-tag">
+                            {{ searchStatusText }} (共 {{ filteredPosts.length }} 篇)
+                            <span class="close-tag" @click="clearSearch">✕</span>
+                        </span>
                     </div>
                 </div>
 
@@ -172,6 +196,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=16"></script>
+    <script src="app.js?v=17"></script>
 </body>
 </html>

@@ -110,9 +110,11 @@ createApp({
         const isSearchActive = ref(false);
         const searchStatusText = ref('');
         const filteredPosts = ref([]);
+        const showDateFilter = ref(false);
 
         const applySearch = () => {
             isSearchActive.value = true;
+            showDateFilter.value = false;
             let res = posts.value;
             
             const q = searchInput.value.trim().toLowerCase();
@@ -270,6 +272,7 @@ createApp({
             endDateInput,
             isSearchActive,
             searchStatusText,
+            showDateFilter,
             applySearch,
             clearSearch,
             currentMonthId,
