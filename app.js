@@ -138,12 +138,11 @@ createApp({
 
         const openPost = (post) => {
             selectedPost.value = post;
-            document.body.style.overflow = 'hidden'; // 防止背景滚动
+            window.scrollTo({ top: 0, behavior: 'instant' });
         };
 
         const closePost = () => {
             selectedPost.value = null;
-            document.body.style.overflow = '';
         };
 
         const formatDate = (ts) => {

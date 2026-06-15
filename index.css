@@ -381,76 +381,89 @@ body {
   font-weight: 500;
 }
 
-/* 图文详情弹窗 (画廊) */
-.lightbox {
-  position: fixed;
+/* 独立的详细图文界面 */
+.detail-view {
+  width: 100%;
+  min-height: 100vh;
+  background: #fdfbf7;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-nav {
+  position: sticky;
   top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.9);
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  backdrop-filter: blur(5px);
+  background: rgba(253, 251, 247, 0.9);
+  backdrop-filter: blur(10px);
+  padding: 16px 20px;
+  z-index: 100;
+  box-shadow: 0 1px 10px rgba(0,0,0,0.03);
 }
 
-.lightbox-close {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  cursor: pointer;
-  z-index: 10000;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  padding: 8px;
-  transition: background 0.3s;
-}
-
-.lightbox-close:hover {
-  background: rgba(255, 255, 255, 0.4);
-}
-
-.lightbox-content {
-  max-width: 800px;
-  margin: 60px auto;
-  padding: 0 16px 60px;
-  width: 100%;
-}
-
-.lightbox-header {
-  color: #fff;
-  margin-bottom: 24px;
-}
-
-.lightbox-header h2 {
-  font-size: 1.5rem;
-  margin-bottom: 8px;
-}
-
-.lightbox-meta {
-  font-size: 0.9rem;
-  color: #ccc;
-  margin-bottom: 12px;
-}
-
-.lightbox-text {
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
   font-size: 1rem;
-  line-height: 1.6;
+  font-weight: 600;
+  color: var(--primary-text);
+  cursor: pointer;
+  padding: 8px 12px;
+  margin-left: -12px;
+  border-radius: 20px;
+  transition: background 0.2s;
 }
 
-.lightbox-gallery {
+.back-btn:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.detail-content {
+  max-width: 600px; /* 类似手机阅读宽度 */
+  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+}
+
+.detail-images-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
 }
 
-.lightbox-gallery img {
+.detail-images-list img {
   width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   display: block;
+}
+
+.detail-text-area {
+  padding: 24px;
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  margin-top: -20px; /* 轻微上浮遮挡图片边缘 */
+  position: relative;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+}
+
+.detail-title {
+  font-size: 1.4rem;
+  color: var(--primary-text);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.detail-date {
+  font-size: 0.85rem;
+  color: #a89f91;
+  margin-bottom: 20px;
+}
+
+.detail-body {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--secondary-text);
+  white-space: pre-wrap; /* 保持换行格式 */
 }
 
 .bottom-actions {
