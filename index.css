@@ -1419,8 +1419,8 @@ body {
 
 /* Toe Beans (Action Buttons) */
 .fab-action { 
-    width: 36px !important; height: 48px !important; /* Smaller toes compared to massive pad */
-    top: 8px !important; left: 14px !important;
+    width: 45px !important; height: 48px !important; /* 1.25x fatter minor axis */
+    top: 8px !important; left: 10px !important;
 }
 
 .fab-mini-btn {
@@ -1435,9 +1435,9 @@ body {
 .fab-mini-btn:hover { filter: brightness(1.1); }
 
 /* Toe Positions forming a beautiful paw around the massive pad */
-.fab-menu.is-open .fab-action.action-3 { transform: translate(-90px, -10px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-2 { transform: translate(-65px, -65px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-1 { transform: translate(-10px, -90px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-3 { transform: translate(-75px, -7px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-2 { transform: translate(-53px, -53px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-1 { transform: translate(-7px, -75px) scale(1) !important; }
 
 /* Toe Rotations */
 .fab-action.action-3 .fab-mini-btn { transform: rotate(-85deg); }
