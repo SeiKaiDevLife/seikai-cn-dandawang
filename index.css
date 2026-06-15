@@ -1239,3 +1239,80 @@ body {
   font-size: 0.9rem;
   z-index: 2;
 }
+/* ========================================= */
+/* 圆环 SVG 文字标签 */
+/* ========================================= */
+.curved-label {
+    position: absolute;
+    top: -28px;
+    left: -28px;
+    width: 100px;
+    height: 100px;
+    pointer-events: none;
+    filter: drop-shadow(0 2px 4px rgba(255,255,255,0.8));
+}
+.curved-label text {
+    fill: #e8590c;
+    font-size: 15px;
+    font-weight: 800;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+/* 隐藏旧版文字标签 */
+.fab-label { display: none !important; }
+
+/* ========================================= */
+/* 自定义排版高级 UI 控制区 */
+/* ========================================= */
+.controls-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+.controls-title {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.95rem;
+}
+.stepper-control {
+  display: flex;
+  align-items: center;
+  background: #f1f3f5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.stepper-btn {
+  background: none;
+  border: none;
+  width: 30px;
+  height: 30px;
+  font-size: 1.2rem;
+  color: #495057;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stepper-btn:hover { background: #e9ecef; }
+.stepper-value {
+  width: 30px;
+  text-align: center;
+  font-weight: 700;
+  color: #ff922b;
+}
+.edit-hint {
+  font-size: 0.85rem;
+  color: #868e96;
+  margin: 0;
+  padding: 0 4px;
+}
+
+/* 拖拽合并交互 */
+.custom-slot.is-drag-preview {
+  background: #fff4e6;
+  border: 2px dashed #ff922b;
+}
+
