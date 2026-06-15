@@ -471,7 +471,12 @@ createApp({
                     const otherEmptySlots = sortedSlots.filter(s => s.id !== currentUploadSlotId.value && !s.image);
                     targetSlots = targetSlots.concat(otherEmptySlots);
                     
-                    const filesToProcess = files.slice(0, targetSlots.length);
+                    let filesToProcess = files;
+                    if (files.length > targetSlots.length) {
+                        alert(`最多只能再选择 ${targetSlots.length} 张图片，已自动为您截取前 ${targetSlots.length} 张。`);
+                        filesToProcess = files.slice(0, targetSlots.length);
+                    }
+                    
                     filesToProcess.forEach((file, index) => {
                         const reader = new FileReader();
                         reader.onload = (ev) => {
@@ -484,7 +489,11 @@ createApp({
                 e.target.value = '';
             } else {
                 const remainingSlots = 99 - publishImages.value.length; // 允许超过9张
-                const filesToProcess = files.slice(0, remainingSlots);
+                let filesToProcess = files;
+                if (files.length > remainingSlots) {
+                    alert(`最多只能再选择 ${remainingSlots} 张图片，已自动为您截取前 ${remainingSlots} 张。`);
+                    filesToProcess = files.slice(0, remainingSlots);
+                }
 
                 filesToProcess.forEach(file => {
                     const reader = new FileReader();
