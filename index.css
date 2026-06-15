@@ -1410,7 +1410,7 @@ body {
 }
 .fab-main.is-open .fab-paw-open-state {
     opacity: 1;
-    transform: scale(1) rotate(-90deg); /* Point left, container rotation makes it top-left! */
+    transform: scale(1.2) rotate(-90deg); /* Point left, 1.2x larger */
 }
 
 /* Hide text labels entirely for now */
@@ -1435,9 +1435,9 @@ body {
 .fab-mini-btn:hover { filter: brightness(1.1); }
 
 /* Toe Positions forming a beautiful paw around the massive pad */
-.fab-menu.is-open .fab-action.action-3 { transform: translate(-75px, -7px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-2 { transform: translate(-53px, -53px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-1 { transform: translate(-7px, -75px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-3 { transform: translate(-65px, 3px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-2 { transform: translate(-43px, -43px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-1 { transform: translate(3px, -65px) scale(1) !important; }
 
 /* Toe Rotations */
 .fab-action.action-3 .fab-mini-btn { transform: rotate(-85deg); }
