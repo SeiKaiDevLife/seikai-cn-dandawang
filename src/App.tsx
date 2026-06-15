@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login/Login';
 
 import React from 'react';
@@ -36,7 +36,7 @@ const Home = () => (
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
         {/* 根路径受保护 */}
@@ -46,7 +46,7 @@ function App() {
           </ProtectedRoute>
         } />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
