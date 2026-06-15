@@ -1,6 +1,5 @@
 const { createApp, ref, onMounted } = Vue;
 
-// 测试用的密码 "123456" 的 SHA256 哈希值
 const CORRECT_HASH = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92";
 
 createApp({
@@ -8,37 +7,64 @@ createApp({
         const isLoggedIn = ref(false);
         const password = ref('');
         const loginError = ref(false);
+        
+        const meta = ref({ totalPosts: 0, months: [] });
+        const posts = ref([]);
+        const currentMonthId = ref('');
 
-        // 初始化检查是否已登录
         const checkLogin = () => {
             const token = localStorage.getItem('auth_token');
             if (token === CORRECT_HASH) {
                 isLoggedIn.value = true;
+                loadData();
             }
         };
 
-        // 处理登录验证
         const handleLogin = () => {
-            // 使用 CryptoJS 进行 SHA256 单向哈希运算
             const hash = CryptoJS.SHA256(password.value).toString();
-            
             if (hash === CORRECT_HASH) {
                 localStorage.setItem('auth_token', hash);
                 isLoggedIn.value = true;
                 password.value = '';
+                loadData();
             } else {
                 loginError.value = true;
-                // 2秒后清除震动错误状态
                 setTimeout(() => {
                     loginError.value = false;
                 }, 2000);
             }
         };
 
-        // 退出登录
         const logout = () => {
             localStorage.removeItem('auth_token');
             isLoggedIn.value = false;
+            posts.value = [];
+        };
+
+        const loadData = async () => {
+            try {
+                // 请求全局索引
+                const metaRes = await fetch('meta.json');
+                if (metaRes.ok) {
+                    meta.value = await metaRes.json();
+                    if (meta.value.months.length > 0) {
+                        // 默认加载最新一个月的数据
+                        currentMonthId.value = meta.value.months[0].id;
+                        const postRes = await fetch(meta.value.months[0].jsonPath);
+                        if (postRes.ok) {
+                            posts.value = await postRes.json();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("加载数据失败", e);
+            }
+        };
+
+        // 格式化时间为可见文本
+        const formatDate = (ts) => {
+            const d = new Date(ts);
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
         };
 
         onMounted(() => {
@@ -50,7 +76,10 @@ createApp({
             password,
             loginError,
             handleLogin,
-            logout
+            logout,
+            meta,
+            posts,
+            formatDate
         };
     }
 }).mount('#app');

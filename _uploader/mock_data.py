@@ -1,6 +1,5 @@
 import os
 import json
-import uuid
 import datetime
 from PIL import Image
 
@@ -17,12 +16,10 @@ MAX_SIZE = 2160
 
 def resize_and_convert_to_webp(src_path, dst_path):
     with Image.open(src_path) as img:
-        # Check orientation and apply EXIF rotation if needed
         from PIL import ImageOps
         img = ImageOps.exif_transpose(img)
         
         width, height = img.size
-        # 1. 超过长边 2160px，按比例缩小
         if max(width, height) > MAX_SIZE:
             if width > height:
                 new_width = MAX_SIZE
@@ -32,14 +29,16 @@ def resize_and_convert_to_webp(src_path, dst_path):
                 new_width = int(width * (MAX_SIZE / height))
             img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
         
-        # 2. 转换为 webp 保存，质量 85 (兼顾清晰度和体积)
         img.save(dst_path, 'WEBP', quality=85)
 
 def update_meta(month_id):
     meta = {"totalPosts": 0, "months": []}
     if os.path.exists(META_JSON_PATH):
         with open(META_JSON_PATH, 'r', encoding='utf-8') as f:
-            meta = json.load(f)
+            try:
+                meta = json.load(f)
+            except Exception:
+                pass
             
     month_entry = next((m for m in meta['months'] if m['id'] == month_id), None)
     if month_entry:
@@ -50,7 +49,6 @@ def update_meta(month_id):
             "postCount": 1,
             "jsonPath": f"posts/{month_id}.json"
         })
-        # 按月份降序排序
         meta['months'] = sorted(meta['months'], key=lambda x: x['id'], reverse=True)
         
     meta['totalPosts'] += 1
@@ -64,10 +62,12 @@ def update_post(month_id, post_data):
     posts = []
     if os.path.exists(month_file):
         with open(month_file, 'r', encoding='utf-8') as f:
-            posts = json.load(f)
+            try:
+                posts = json.load(f)
+            except Exception:
+                pass
             
     posts.append(post_data)
-    # 按时间戳降序排序
     posts = sorted(posts, key=lambda x: x['timestamp'], reverse=True)
     
     os.makedirs(os.path.dirname(month_file), exist_ok=True)
@@ -80,62 +80,83 @@ def main():
         return
         
     with open(INPUT_JSON_PATH, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-        
-    if not data:
-        print("✅ input.json 中没有数据需要处理。")
+        try:
+            item = json.load(f)
+        except Exception:
+            item = {}
+            
+    if not item or not isinstance(item, dict) or not item.get("time"):
+        print("✅ input.json 中没有有效数据需要处理（或缺少 time 字段）。")
         return
         
     os.makedirs(IMAGE_SRC_DIR, exist_ok=True)
     
-    processed_count = 0
-    for item in data:
-        dt = datetime.datetime.fromisoformat(item['time'])
-        month_id = dt.strftime("%Y-%m")
-        timestamp_ms = int(dt.timestamp() * 1000)
-        
-        post_id = f"post_{timestamp_ms}_{uuid.uuid4().hex[:6]}"
-        
-        dst_img_dir = os.path.join(IMAGES_DST_DIR, month_id)
-        os.makedirs(dst_img_dir, exist_ok=True)
-        
-        saved_images = []
-        for img_name in item.get('images', []):
-            src_img_path = os.path.join(IMAGE_SRC_DIR, img_name)
-            if not os.path.exists(src_img_path):
-                print(f"⚠️ 警告: 图片不存在 -> {src_img_path}，跳过该图片。")
-                continue
-                
-            new_img_name = f"{uuid.uuid4().hex}.webp"
-            dst_img_path = os.path.join(dst_img_dir, new_img_name)
+    all_files = os.listdir(IMAGE_SRC_DIR)
+    # 过滤掉隐藏文件，并进行排序以保证图片的顺序与系统内排序一致
+    img_names = sorted([f for f in all_files if os.path.isfile(os.path.join(IMAGE_SRC_DIR, f)) and not f.startswith('.')])
+    
+    if not img_names:
+        print("⚠️ 警告: image 文件夹下没有找到任何图片，本次图文将没有图片。")
+    
+    dt = datetime.datetime.fromisoformat(item['time'])
+    month_id = dt.strftime("%Y-%m")
+    date_str = dt.strftime("%Y-%m-%d")
+    timestamp_ms = int(dt.timestamp() * 1000)
+    
+    # 清理标题中可能导致文件夹创建失败的非法字符
+    safe_title = "".join(c for c in item.get('title', '未命名图文') if c not in r'\/:*?"<>|')
+    
+    # 使用 日期+标题 作为这篇图文的唯一文件夹名称，例如：2023-10-15_迎接氮氮的第一天
+    post_folder_name = f"{date_str}_{safe_title}"
+    post_id = f"post_{timestamp_ms}"
+    
+    # public/images/2023-10/2023-10-15_迎接氮氮的第一天/
+    dst_img_dir = os.path.join(IMAGES_DST_DIR, month_id, post_folder_name)
+    os.makedirs(dst_img_dir, exist_ok=True)
+    
+    saved_images = []
+    for idx, img_name in enumerate(img_names, start=1):
+        src_img_path = os.path.join(IMAGE_SRC_DIR, img_name)
             
-            print(f"⏳ 正在处理图片: {img_name} -> {new_img_name}")
+        new_img_name = f"{idx}.webp"
+        dst_img_path = os.path.join(dst_img_dir, new_img_name)
+        
+        print(f"⏳ 正在处理图片: {img_name} -> {new_img_name}")
+        try:
             resize_and_convert_to_webp(src_img_path, dst_img_path)
-            saved_images.append(f"images/{month_id}/{new_img_name}")
-            
-            # 删除原图防止二次上传
-            os.remove(src_img_path)
-            
-        post_data = {
-            "id": post_id,
-            "timestamp": timestamp_ms,
-            "type": "normal",
-            "title": item.get('title', ''),
-            "content": item.get('content', ''),
-            "images": saved_images,
-            "layout_config": None
-        }
+            # 保存相对路径
+            saved_images.append(f"images/{month_id}/{post_folder_name}/{new_img_name}")
+        except Exception as e:
+            print(f"❌ 处理图片 {img_name} 失败: {e}")
+            continue
         
-        update_post(month_id, post_data)
-        update_meta(month_id)
-        print(f"✅ 成功生成图文: {item.get('title')} (归档至 {month_id})")
-        processed_count += 1
+        # 删除原图
+        os.remove(src_img_path)
         
-    # 清空 input.json 防止重复处理
+    post_data = {
+        "id": post_id,
+        "timestamp": timestamp_ms,
+        "type": "normal",
+        "title": item.get('title', ''),
+        "content": item.get('content', ''),
+        "images": saved_images,
+        "layout_config": None
+    }
+    
+    update_post(month_id, post_data)
+    update_meta(month_id)
+    print(f"✅ 成功生成图文: {item.get('title')} (归档至 {month_id}/{post_folder_name})，包含 {len(saved_images)} 张图片。")
+        
+    # 重置为带有当前时间的空模板，方便用户下次填写，而不是直接清空
+    empty_template = {
+        "title": "",
+        "content": "",
+        "time": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    }
     with open(INPUT_JSON_PATH, 'w', encoding='utf-8') as f:
-        json.dump([], f, indent=2)
+        json.dump(empty_template, f, ensure_ascii=False, indent=2)
         
-    print(f"🎉 任务完毕！共成功处理并生成 {processed_count} 条动态。")
+    print("🎉 任务完毕！")
 
 if __name__ == "__main__":
     main()

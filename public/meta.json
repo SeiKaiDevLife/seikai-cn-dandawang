@@ -1,0 +1,15 @@
+{
+  "totalPosts": 4,
+  "months": [
+    {
+      "id": "2026-06",
+      "postCount": 2,
+      "jsonPath": "posts/2026-06.json"
+    },
+    {
+      "id": "2026-05",
+      "postCount": 2,
+      "jsonPath": "posts/2026-05.json"
+    }
+  ]
+}
