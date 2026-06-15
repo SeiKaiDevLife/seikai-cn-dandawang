@@ -14,7 +14,7 @@ createApp({
         const posts = ref([]);
         const currentMonthId = ref('');
         
-        const ASSET_BASE = 'public/';
+        const ASSET_BASE = 'https://www-seikai.oss-cn-hangzhou.aliyuncs.com/dandawang/public/';
 
         const checkLogin = () => {
             if (isLoggedIn.value) {
