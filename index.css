@@ -1418,3 +1418,69 @@ body {
     pointer-events: none;
 }
 .fab-menu.is-open .fab-label { opacity: 1 !important; }
+/* ========================================= */
+/* SUPER CUTE PINK PAW REDESIGN */
+/* ========================================= */
+.fab-container { width: 64px !important; height: 64px !important; }
+.fab-main { 
+    width: 64px !important; height: 64px !important; 
+    border-radius: 50% !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    position: relative;
+    overflow: visible !important;
+    border: none !important;
+}
+
+.fab-main.is-open {
+    transform: none !important;
+}
+
+/* State 1: Closed - Full Cat Paw */
+.fab-paw-closed-state {
+    position: absolute; inset: -5px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    color: #ff8da1; /* Cute soft pink */
+    filter: drop-shadow(0 6px 16px rgba(255, 141, 161, 0.4));
+    transform: rotate(-15deg);
+}
+.fab-main.is-open .fab-paw-closed-state {
+    opacity: 0; transform: scale(0.5) rotate(-45deg);
+}
+
+/* State 2: Open - Pad Only */
+.fab-paw-open-state {
+    position: absolute; inset: -5px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transform: scale(0.5) rotate(0deg);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    color: #ff8da1;
+    filter: drop-shadow(0 6px 16px rgba(255, 141, 161, 0.4));
+}
+.fab-main.is-open .fab-paw-open-state {
+    opacity: 1;
+    transform: scale(1) rotate(-15deg);
+}
+
+/* Toe Beans (Action Buttons) */
+.fab-action { 
+    width: 44px !important; height: 56px !important; 
+    top: 4px !important; left: 10px !important;
+}
+
+.fab-mini-btn {
+    width: 100% !important; height: 100% !important;
+    border-radius: 50% 50% 45% 45% !important; /* Teardrop shape */
+    background: #ff8da1 !important; /* Cute pink */
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(255, 141, 161, 0.4) !important;
+    transition: transform 0.2s, filter 0.2s !important;
+    border: none !important;
+}
+.fab-mini-btn:hover { filter: brightness(1.05) saturate(1.1); }
+
+/* Remove old circle state rules if they exist */
+.fab-circle-state { display: none !important; }
+.fab-paw-state { display: none !important; }

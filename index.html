@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=27">
+    <link rel="stylesheet" href="index.css?v=28">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -257,17 +257,30 @@
                 </div>
                 
                 <button class="fab-main" @click="toggleFab" :class="{ 'is-open': isFabOpen }">
-                    <!-- The circle state -->
-                    <div class="fab-circle-state">
-                        <svg class="fab-icon-plus" viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <!-- The closed state: Full Cat Paw -->
+                    <div class="fab-paw-closed-state">
+                        <svg viewBox="0 0 100 100" width="56" height="56">
+                            <defs>
+                                <linearGradient id="cute-pink" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#ffb3c6" />
+                                    <stop offset="100%" stop-color="#ff7ca3" />
+                                </linearGradient>
+                            </defs>
+                            <g fill="url(#cute-pink)">
+                                <!-- Central Pad -->
+                                <path d="M50 85 C35 85 25 75 25 65 C25 55 35 50 50 50 C65 50 75 55 75 65 C75 75 65 85 50 85 Z"/>
+                                <!-- Toe Pads -->
+                                <path d="M25 40 C20 30 20 20 30 20 C40 20 40 30 35 40 Z"/>
+                                <path d="M40 30 C35 15 45 10 50 20 C55 10 65 15 60 30 Z"/>
+                                <path d="M65 30 C70 15 80 15 75 30 C70 40 60 40 65 30 Z" transform="rotate(-10 65 30)"/>
+                                <path d="M80 45 C85 35 95 40 90 50 C85 55 75 50 80 45 Z"/>
+                            </g>
                         </svg>
                     </div>
-                    <!-- The paw pad state -->
-                    <div class="fab-paw-state">
-                        <svg viewBox="64 220 384 260" width="48" height="48">
-                            <path fill="currentColor" d="M256 224c-79.41 0-192 122.76-192 200.25 0 34.9 26.81 55.75 71.74 55.75 48.84 0 81.09-25.08 120.26-25.08 39.51 0 71.85 25.08 120.26 25.08 44.93 0 71.74-20.85 71.74-55.75C448 346.76 335.41 224 256 224z" />
+                    <!-- The open state: Paw Pad Only -->
+                    <div class="fab-paw-open-state">
+                        <svg viewBox="0 0 100 100" width="56" height="56">
+                            <path fill="url(#cute-pink)" d="M50 85 C35 85 25 75 25 65 C25 55 35 50 50 50 C65 50 75 55 75 65 C75 75 65 85 50 85 Z" />
                         </svg>
                     </div>
                 </button>
@@ -358,6 +371,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=27"></script>
+    <script src="app.js?v=28"></script>
 </body>
 </html>
