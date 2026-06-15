@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=12">
+    <link rel="stylesheet" href="index.css?v=14">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -43,6 +43,15 @@
         <div class="main-app" v-else>
             <!-- 首页视图 (瀑布流展示)，用 v-show 保证从详情返回时不刷新不丢失高度 -->
             <div class="home-view" v-show="!selectedPost">
+                
+                <!-- 顶部浮动搜索入口 -->
+                <div class="search-bar-wrapper" @click="openSearch">
+                    <div class="search-bar-pill">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <span>搜索图文关键词或按时间筛选...</span>
+                    </div>
+                </div>
+
                 <!-- 英雄头图 -->
                 <div class="hero-section">
                     <div class="hero-image-placeholder"></div>
@@ -55,8 +64,8 @@
                         <!-- 头像增加随机数后缀防止缓存 -->
                         <img :src="ASSET_BASE + 'avatar.webp?v=' + Date.now()" class="profile-avatar" alt="Avatar" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'%23ddd\'/></svg>'">
                     </div>
-                    <h1 class="profile-name">氮氮 Dandan</h1>
-                    <p class="profile-bio">SeiKai & echoofmine 的宝贝米努特 🐾<br>每天都在吃和睡之间疯狂试探</p>
+                    <h1 class="profile-name">氮氮</h1>
+                    <p class="profile-bio">SeiKai & Echo 的宝贝米努特 🐾<br>每天都在吃和睡之间疯狂试探</p>
                     
                     <div class="stats-row">
                         <div class="stat-item">
@@ -122,10 +131,18 @@
                         </svg>
                     </button>
                     
-                    <div class="detail-slider" @scroll="onSliderScroll">
+                    <div class="detail-slider" @scroll="onSliderScroll" ref="sliderRef">
                         <div class="slider-item" v-for="(img, index) in selectedPost.images" :key="index">
                             <img :src="getImageUrl(img) + '?v=' + selectedPost.hash" loading="lazy">
                         </div>
+                    </div>
+
+                    <!-- 电脑端左右切换按钮 -->
+                    <div class="slider-arrow slider-prev" @click="prevSlide" v-if="currentSlideIndex > 0">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </div>
+                    <div class="slider-arrow slider-next" @click="nextSlide" v-if="selectedPost.images && currentSlideIndex < selectedPost.images.length - 1">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                     </div>
                     
                     <!-- 图片指示器 (例如: 1/6) -->
@@ -145,9 +162,39 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 全屏搜索和筛选扩展页 -->
+            <div class="search-overlay" v-if="isSearchOpen">
+                <div class="search-header">
+                    <div class="search-input-group">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="#888" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" v-model="searchQuery" placeholder="输入你想搜索的内容..." ref="searchInput" autofocus>
+                        <button class="clear-btn" v-if="searchQuery" @click="searchQuery = ''">✕</button>
+                    </div>
+                    <button class="cancel-btn" @click="closeSearch">取消</button>
+                </div>
+                
+                <div class="search-filters">
+                    <h3>按时间筛选</h3>
+                    <div class="month-chips">
+                        <button 
+                            :class="['chip', { active: currentMonthId === 'all' }]" 
+                            @click="filterByMonth('all')">
+                            全部时间
+                        </button>
+                        <button 
+                            v-for="m in meta.months" 
+                            :key="m.id"
+                            :class="['chip', { active: currentMonthId === m.id }]"
+                            @click="filterByMonth(m.id)">
+                            {{ m.id }}
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=13"></script>
+    <script src="app.js?v=14"></script>
 </body>
 </html>

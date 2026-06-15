@@ -74,7 +74,7 @@ createApp({
                 posts.value = allPosts.sort((a, b) => b.timestamp - a.timestamp);
                 distributePosts();
             } catch (e) {
-                console.error("加载全部数据失败", e);
+                console.error("加载全部失败", e);
             }
         };
 
@@ -88,28 +88,66 @@ createApp({
                     }
                 }
             } catch (e) {
-                console.error("加载数据失败", e);
+                console.error("加载失败", e);
             }
         };
 
-        // 瀑布流左右列
+        // 瀑布流
         const leftCol = ref([]);
         const rightCol = ref([]);
-        const selectedPost = ref(null); // 当前正在查看的图文
+        const selectedPost = ref(null);
 
-        // 兼容数据格式
+        // 搜索扩展页逻辑
+        const isSearchOpen = ref(false);
+        const searchQuery = ref('');
+        
+        const openSearch = () => {
+            isSearchOpen.value = true;
+        };
+
+        const closeSearch = () => {
+            isSearchOpen.value = false;
+        };
+
+        const filterByMonth = async (monthId) => {
+            if (monthId === 'all') {
+                await loadAllMonths();
+            } else {
+                const m = meta.value.months.find(x => x.id === monthId);
+                if (m) await loadMonth(m);
+            }
+            closeSearch();
+        };
+
+        // 数据过滤监听
+        const filteredPosts = Vue.computed(() => {
+            let res = posts.value;
+            if (searchQuery.value.trim()) {
+                const q = searchQuery.value.trim().toLowerCase();
+                res = res.filter(p => 
+                    (p.title && p.title.toLowerCase().includes(q)) || 
+                    (p.content && p.content.toLowerCase().includes(q))
+                );
+            }
+            return res;
+        });
+
+        Vue.watch(filteredPosts, () => {
+            distributePosts();
+        });
+
+        // 瀑布流高度计算
         const getImageUrl = (img) => {
             return ASSET_BASE + (typeof img === 'string' ? img : img.url);
         };
 
-        // 真正的瀑布流高度计算：预加载首图获取高度比例，然后分配给较矮的列
         const distributePosts = async () => {
             leftCol.value = [];
             rightCol.value = [];
             let leftHeight = 0;
             let rightHeight = 0;
 
-            for (const post of posts.value) {
+            for (const post of filteredPosts.value) {
                 if (!post.hash) post.hash = post.timestamp;
                 
                 let ratio = 1; // 默认 1:1
@@ -142,11 +180,33 @@ createApp({
         };
 
         const currentSlideIndex = ref(0);
+        const sliderRef = ref(null);
 
         const onSliderScroll = (e) => {
             const scrollLeft = e.target.scrollLeft;
             const width = e.target.clientWidth;
             currentSlideIndex.value = Math.round(scrollLeft / width);
+        };
+
+        const scrollToSlide = (index) => {
+            if (sliderRef.value) {
+                const width = sliderRef.value.clientWidth;
+                sliderRef.value.scrollTo({ left: width * index, behavior: 'smooth' });
+            }
+        };
+
+        const prevSlide = () => {
+            if (currentSlideIndex.value > 0) {
+                currentSlideIndex.value--;
+                scrollToSlide(currentSlideIndex.value);
+            }
+        };
+
+        const nextSlide = () => {
+            if (selectedPost.value && selectedPost.value.images && currentSlideIndex.value < selectedPost.value.images.length - 1) {
+                currentSlideIndex.value++;
+                scrollToSlide(currentSlideIndex.value);
+            }
         };
 
         const openPost = (post) => {
@@ -185,6 +245,11 @@ createApp({
             posts,
             leftCol,
             rightCol,
+            isSearchOpen,
+            searchQuery,
+            openSearch,
+            closeSearch,
+            filterByMonth,
             currentMonthId,
             loadMonth,
             loadAllMonths,
@@ -195,7 +260,10 @@ createApp({
             closePost,
             selectedPost,
             currentSlideIndex,
-            onSliderScroll
+            onSliderScroll,
+            sliderRef,
+            prevSlide,
+            nextSlide
         };
     }
 }).mount('#app');
