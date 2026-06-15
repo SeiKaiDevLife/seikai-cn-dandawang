@@ -1,6 +1,9 @@
 :root {
-  --primary-color: #333;
-  --bg-color: #fafafa;
+  --primary-text: #5c4d43;
+  --secondary-text: #8e7365;
+  --accent-orange: #ff9f43;
+  --accent-yellow: #ffda79;
+  --bg-base: #fff5e6;
 }
 
 * {
@@ -12,36 +15,40 @@
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background-color: var(--bg-color);
+  background-color: var(--bg-base);
+  color: var(--primary-text);
 }
 
 [v-cloak] {
   display: none !important;
 }
 
-/* 登录界面样式 */
+/* 登录界面样式 - 可爱明亮的主题 */
 .login-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f3f4f6;
+  background-color: var(--bg-base);
+  /* 橙、黄、白的明亮 Mesh Gradient 渐变 */
   background-image: 
-    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-    radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
-    radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+    radial-gradient(at 0% 0%, hsla(38, 100%, 85%, 1) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, hsla(28, 100%, 80%, 1) 0px, transparent 50%),
+    radial-gradient(at 40% 50%, hsla(0, 0%, 100%, 1) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, hsla(45, 100%, 85%, 1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(20, 100%, 80%, 1) 0px, transparent 50%);
   background-size: cover;
   overflow: hidden;
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 3rem 2.5rem;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 12px 40px 0 rgba(255, 159, 67, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  padding: 3.5rem 2.5rem;
   width: 90%;
   max-width: 380px;
   text-align: center;
@@ -50,26 +57,34 @@ body {
 
 .glass-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
+  box-shadow: 0 16px 50px 0 rgba(255, 159, 67, 0.25);
 }
 
 .avatar-placeholder {
-  font-size: 3rem;
+  font-size: 3.5rem;
   margin-bottom: 1rem;
   user-select: none;
+  display: inline-block;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
 }
 
 .title {
   font-size: 1.8rem;
-  color: #fff;
+  color: #d35400;
   margin-bottom: 0.5rem;
   font-weight: 700;
   letter-spacing: -0.5px;
 }
 
 .subtitle {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  color: var(--secondary-text);
   margin-bottom: 2.5rem;
 }
 
@@ -81,51 +96,55 @@ body {
 
 .input {
   width: 100%;
-  padding: 1rem 1.2rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(0, 0, 0, 0.2);
-  color: #fff;
+  padding: 1.1rem 1.2rem;
+  border-radius: 16px;
+  border: 2px solid rgba(255, 159, 67, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--primary-text);
   font-size: 1rem;
+  font-weight: 500;
   outline: none;
   transition: all 0.2s;
 }
 
 .input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: #c8b7b0;
+  font-weight: 400;
 }
 
 .input:focus {
-  background: rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border-color: var(--accent-orange);
+  box-shadow: 0 0 0 4px rgba(255, 159, 67, 0.2);
 }
 
 .button {
   width: 100%;
-  padding: 1rem;
-  border-radius: 12px;
+  padding: 1.1rem;
+  border-radius: 16px;
   border: none;
-  background: #fff;
-  color: #333;
-  font-size: 1rem;
-  font-weight: 600;
+  background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-orange) 100%);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 4px 15px rgba(255, 159, 67, 0.3);
+  transition: all 0.2s;
 }
 
 .button:hover {
-  background: #f0f0f0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 159, 67, 0.4);
 }
 
 .button:active {
-  transform: scale(0.98);
+  transform: scale(0.96);
 }
 
 .error-shake {
   animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
-  border-color: #ff4d4f;
-  background: rgba(255, 77, 79, 0.15);
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.05);
 }
 
 @keyframes shake {
