@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=42">
+    <link rel="stylesheet" href="index.css?v=43">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -334,7 +334,7 @@
                                     <img :src="slot.image" v-if="slot.image">
                                 </div>
                             </div>
-                            <input type="file" accept="image/*" ref="fileInputRef" style="display:none;" @change="handleImageSelect">
+                            <input type="file" multiple accept="image/*" ref="fileInputRef" style="display:none;" @change="handleImageSelect">
                         </div>
 
                         <!-- 默认图片上传区 -->
@@ -373,6 +373,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=42"></script>
+    <script src="app.js?v=43"></script>
 </body>
 </html>
