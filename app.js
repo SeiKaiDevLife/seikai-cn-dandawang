@@ -463,14 +463,19 @@ createApp({
                         if (a.r !== b.r) return a.r - b.r;
                         return a.c - b.c;
                     });
-                    let startIndex = sortedSlots.findIndex(s => s.id === currentUploadSlotId.value);
-                    if (startIndex === -1) startIndex = 0;
                     
-                    const filesToProcess = files.slice(0, sortedSlots.length - startIndex);
+                    let targetSlots = [];
+                    const clickedSlot = sortedSlots.find(s => s.id === currentUploadSlotId.value);
+                    if (clickedSlot) targetSlots.push(clickedSlot);
+                    
+                    const otherEmptySlots = sortedSlots.filter(s => s.id !== currentUploadSlotId.value && !s.image);
+                    targetSlots = targetSlots.concat(otherEmptySlots);
+                    
+                    const filesToProcess = files.slice(0, targetSlots.length);
                     filesToProcess.forEach((file, index) => {
                         const reader = new FileReader();
                         reader.onload = (ev) => {
-                            sortedSlots[startIndex + index].image = ev.target.result;
+                            targetSlots[index].image = ev.target.result;
                         };
                         reader.readAsDataURL(file);
                     });
