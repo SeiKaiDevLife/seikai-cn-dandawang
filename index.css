@@ -1320,8 +1320,24 @@ body {
 .fab-container { width: 64px !important; height: 64px !important; }
 .fab-main { 
     width: 64px !important; height: 64px !important; 
-    border-radius: 40% 40% 50% 50% !important; /* Slightly shaped like a paw pad */
+    border-radius: 50% !important; /* Perfect circle when closed */
+    transition: border-radius 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s, color 0.3s !important;
 }
+.fab-main.is-open {
+    transform: none !important; /* Prevent container rotation */
+    border-radius: 35% 35% 45% 45% / 25% 25% 50% 50% !important; /* Morph into paw pad when open */
+    background: #fff !important;
+    color: #ff922b !important;
+}
+
+/* Rotate ONLY the icon inside fab-main when open */
+.fab-main svg {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.fab-main.is-open svg {
+    transform: rotate(45deg) !important;
+}
+
 .fab-action { 
     width: 48px !important; height: 48px !important; 
     top: 8px !important; left: 8px !important; 
@@ -1330,19 +1346,25 @@ body {
     border-radius: 50% !important; /* Toes are round */
 }
 
-/* Toe 1: Bottom-Left (Normal) */
-.fab-menu.is-open .fab-action.action-3 { transform: translate(-70px, -15px) scale(1) !important; }
-/* Toe 2: Top-Left (Nine-Grid) */
-.fab-menu.is-open .fab-action.action-2 { transform: translate(-55px, -65px) scale(1) !important; }
-/* Toe 3: Top (Custom) */
-.fab-menu.is-open .fab-action.action-1 { transform: translate(-10px, -80px) scale(1) !important; }
+/* Spread toes far apart in a wider arch */
+/* Toe 1: Left */
+.fab-menu.is-open .fab-action.action-3 { transform: translate(-95px, -15px) scale(1) !important; }
+/* Toe 2: Top-Left */
+.fab-menu.is-open .fab-action.action-2 { transform: translate(-75px, -70px) scale(1) !important; }
+/* Toe 3: Top */
+.fab-menu.is-open .fab-action.action-1 { transform: translate(-15px, -95px) scale(1) !important; }
 
-/* Adjust SVG text size and position */
+/* Adjust SVG text size and position to prevent overlap */
 .curved-label {
     top: -26px !important;
     left: -26px !important;
 }
 .curved-label text {
-    font-size: 11.5px !important; /* Smaller text */
+    font-size: 11px !important; /* Even smaller text */
     font-weight: 700 !important;
 }
+
+/* Fan out the labels so they don't touch */
+.fab-action.action-3 .curved-label { transform: rotate(-55deg) !important; }
+.fab-action.action-2 .curved-label { transform: rotate(-30deg) !important; }
+.fab-action.action-1 .curved-label { transform: rotate(0deg) !important; }
