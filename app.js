@@ -11,6 +11,10 @@ createApp({
         const meta = ref({ totalPosts: 0, months: [] });
         const posts = ref([]);
         const currentMonthId = ref('');
+        
+        // 资源基础路径：当前是在 GitHub Pages 根目录，所以静态数据在 public/ 下
+        // 以后如果图片和 JSON 搬迁到 OSS，只需要把这里改成 "https://你的OSS域名.com/" 即可
+        const ASSET_BASE = 'public/';
 
         const checkLogin = () => {
             const token = localStorage.getItem('auth_token');
@@ -44,13 +48,13 @@ createApp({
         const loadData = async () => {
             try {
                 // 请求全局索引
-                const metaRes = await fetch('meta.json');
+                const metaRes = await fetch(ASSET_BASE + 'meta.json');
                 if (metaRes.ok) {
                     meta.value = await metaRes.json();
                     if (meta.value.months.length > 0) {
                         // 默认加载最新一个月的数据
                         currentMonthId.value = meta.value.months[0].id;
-                        const postRes = await fetch(meta.value.months[0].jsonPath);
+                        const postRes = await fetch(ASSET_BASE + meta.value.months[0].jsonPath);
                         if (postRes.ok) {
                             posts.value = await postRes.json();
                         }
@@ -79,7 +83,8 @@ createApp({
             logout,
             meta,
             posts,
-            formatDate
+            formatDate,
+            ASSET_BASE
         };
     }
 }).mount('#app');
