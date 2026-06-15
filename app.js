@@ -4,31 +4,34 @@ const CORRECT_HASH = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923a
 
 createApp({
     setup() {
-        const isLoggedIn = ref(false);
+        const isLoggedIn = ref(localStorage.getItem('isLoggedIn') === 'true');
+        const username = ref(localStorage.getItem('username') || '');
         const password = ref('');
         const loginError = ref(false);
+        const scrollPosition = ref(0);
         
         const meta = ref({ totalPosts: 0, months: [] });
         const posts = ref([]);
         const currentMonthId = ref('');
         
-        // 资源基础路径：当前是在 GitHub Pages 根目录，所以静态数据在 public/ 下
-        // 以后如果图片和 JSON 搬迁到 OSS，只需要把这里改成 "https://你的OSS域名.com/" 即可
-        const ASSET_BASE = 'public/';
+        // 假设代码在 GitHub Pages 的同级目录或者 public/ 目录
+        const ASSET_BASE = './';
 
         const checkLogin = () => {
-            const token = localStorage.getItem('auth_token');
-            if (token === CORRECT_HASH) {
-                isLoggedIn.value = true;
+            if (isLoggedIn.value) {
                 loadData();
             }
         };
 
         const handleLogin = () => {
             const hash = CryptoJS.SHA256(password.value).toString();
-            if (hash === CORRECT_HASH) {
-                localStorage.setItem('auth_token', hash);
+            // seikai_dandan 的 sha256
+            if (hash === 'a364239845ce376b1f2371457df07a04803d526fc8e658e4e7eeccfc83f70ed1') {
                 isLoggedIn.value = true;
+                localStorage.setItem('isLoggedIn', 'true');
+                if (username.value) {
+                    localStorage.setItem('username', username.value);
+                }
                 password.value = '';
                 loadData();
             } else {
@@ -40,7 +43,8 @@ createApp({
         };
 
         const logout = () => {
-            localStorage.removeItem('auth_token');
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('username');
             isLoggedIn.value = false;
             posts.value = [];
         };
@@ -145,13 +149,19 @@ createApp({
         };
 
         const openPost = (post) => {
+            scrollPosition.value = window.scrollY || document.documentElement.scrollTop;
             selectedPost.value = post;
             currentSlideIndex.value = 0;
-            window.scrollTo({ top: 0, behavior: 'auto' });
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'auto' });
+            }, 0);
         };
 
         const closePost = () => {
             selectedPost.value = null;
+            setTimeout(() => {
+                window.scrollTo({ top: scrollPosition.value, behavior: 'auto' });
+            }, 0);
         };
 
         const formatDate = (ts) => {
@@ -165,6 +175,7 @@ createApp({
 
         return {
             isLoggedIn,
+            username,
             password,
             loginError,
             handleLogin,
