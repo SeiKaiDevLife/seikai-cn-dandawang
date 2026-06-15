@@ -295,24 +295,21 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 16px;
-  /* CSS 多列布局实现简单瀑布流 */
-  column-count: 2;
-  column-gap: 16px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
 }
 
-/* 移动端两列，PC端三列或四列 */
-@media (min-width: 768px) {
-  .waterfall-container { column-count: 3; }
-}
-@media (min-width: 1024px) {
-  .waterfall-container { column-count: 4; }
+.waterfall-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .timeline-post {
-  break-inside: avoid;
   background: #fff;
   border-radius: 16px;
-  margin-bottom: 16px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.03);
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;

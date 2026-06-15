@@ -56,24 +56,43 @@
                 </div>
             </div>
 
-            <!-- 小红书风格瀑布流展示区 -->
+            <!-- 小红书风格瀑布流展示区 (JS 分列计算) -->
             <div class="waterfall-container">
-                <div class="timeline-post" v-for="post in posts" :key="post.id">
-                    <!-- 封面图 (取第一张) -->
-                    <div class="post-cover" v-if="post.images && post.images.length > 0">
-                        <!-- 增加 ?v=post.timestamp 后缀防止浏览器强缓存同名文件 -->
-                        <img :src="ASSET_BASE + post.images[0] + '?v=' + post.timestamp" loading="lazy">
-                        <!-- 多图标志 -->
-                        <div class="multi-img-icon" v-if="post.images.length > 1">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <!-- 左列 -->
+                <div class="waterfall-col">
+                    <div class="timeline-post" v-for="post in leftCol" :key="post.id">
+                        <div class="post-cover" v-if="post.images && post.images.length > 0">
+                            <!-- 加上强力防缓存随机数，确保每次覆盖图片后必定刷新 -->
+                            <img :src="ASSET_BASE + post.images[0] + '?v=' + post.hash" loading="lazy">
+                            <div class="multi-img-icon" v-if="post.images.length > 1">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                            </div>
+                        </div>
+                        <div class="post-info">
+                            <h2 class="post-title" v-if="post.title">{{ post.title }}</h2>
+                            <p class="post-content" v-if="post.content">{{ post.content }}</p>
+                            <div class="post-meta">
+                                <span class="post-date">{{ formatDate(post.timestamp) }}</span>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="post-info">
-                        <h2 class="post-title" v-if="post.title">{{ post.title }}</h2>
-                        <p class="post-content" v-if="post.content">{{ post.content }}</p>
-                        <div class="post-meta">
-                            <span class="post-date">{{ formatDate(post.timestamp) }}</span>
+                </div>
+
+                <!-- 右列 -->
+                <div class="waterfall-col">
+                    <div class="timeline-post" v-for="post in rightCol" :key="post.id">
+                        <div class="post-cover" v-if="post.images && post.images.length > 0">
+                            <img :src="ASSET_BASE + post.images[0] + '?v=' + post.hash" loading="lazy">
+                            <div class="multi-img-icon" v-if="post.images.length > 1">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                            </div>
+                        </div>
+                        <div class="post-info">
+                            <h2 class="post-title" v-if="post.title">{{ post.title }}</h2>
+                            <p class="post-content" v-if="post.content">{{ post.content }}</p>
+                            <div class="post-meta">
+                                <span class="post-date">{{ formatDate(post.timestamp) }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -85,6 +104,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 </body>
 </html>

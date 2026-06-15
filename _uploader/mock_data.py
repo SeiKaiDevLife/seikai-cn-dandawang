@@ -1,5 +1,6 @@
 import os
 import json
+import uuid
 import datetime
 from PIL import Image
 
@@ -135,6 +136,7 @@ def main():
         
     post_data = {
         "id": post_id,
+        "hash": uuid.uuid4().hex[:8],
         "timestamp": timestamp_ms,
         "type": "normal",
         "title": item.get('title', ''),

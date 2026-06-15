@@ -61,14 +61,13 @@ createApp({
             currentMonthId.value = 'all';
             let allPosts = [];
             try {
-                // 并发请求所有月份的JSON
                 const reqs = meta.value.months.map(m => fetch(ASSET_BASE + m.jsonPath).then(r => r.json()));
                 const results = await Promise.all(reqs);
                 results.forEach(res => {
                     allPosts = allPosts.concat(res);
                 });
-                // 按时间倒序排序合并后的所有文章
                 posts.value = allPosts.sort((a, b) => b.timestamp - a.timestamp);
+                distributePosts();
             } catch (e) {
                 console.error("加载全部数据失败", e);
             }
@@ -76,12 +75,10 @@ createApp({
 
         const loadData = async () => {
             try {
-                // 请求全局索引
                 const metaRes = await fetch(ASSET_BASE + 'meta.json');
                 if (metaRes.ok) {
                     meta.value = await metaRes.json();
                     if (meta.value.months.length > 0) {
-                        // 默认加载全部动态
                         await loadAllMonths();
                     }
                 }
@@ -90,7 +87,25 @@ createApp({
             }
         };
 
-        // 格式化时间为可见文本
+        // 瀑布流左右列
+        const leftCol = ref([]);
+        const rightCol = ref([]);
+
+        // 简单的左右交替分配算法，保证 A 左 B 右 C 左 D 右 的阅读顺序
+        const distributePosts = () => {
+            leftCol.value = [];
+            rightCol.value = [];
+            posts.value.forEach((post, index) => {
+                // 如果后端没有 hash，临时补一个防止图片报错
+                if (!post.hash) post.hash = post.timestamp;
+                if (index % 2 === 0) {
+                    leftCol.value.push(post);
+                } else {
+                    rightCol.value.push(post);
+                }
+            });
+        };
+
         const formatDate = (ts) => {
             const d = new Date(ts);
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
@@ -108,6 +123,8 @@ createApp({
             logout,
             meta,
             posts,
+            leftCol,
+            rightCol,
             currentMonthId,
             loadMonth,
             loadAllMonths,
