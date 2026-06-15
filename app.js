@@ -14,8 +14,7 @@ createApp({
         const posts = ref([]);
         const currentMonthId = ref('');
         
-        // 假设代码在 GitHub Pages 的同级目录或者 public/ 目录
-        const ASSET_BASE = './';
+        const ASSET_BASE = 'public/';
 
         const checkLogin = () => {
             if (isLoggedIn.value) {
