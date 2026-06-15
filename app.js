@@ -254,13 +254,21 @@ createApp({
         };
 
         // 发布功能逻辑 (临时)
+        const isFabOpen = ref(false);
         const isPublishOpen = ref(false);
+        const publishMode = ref('normal'); // 'normal' | 'nine-grid' | 'custom'
         const publishTitle = ref('');
         const publishContent = ref('');
         const publishImages = ref([]);
         const fileInputRef = ref(null);
 
-        const openPublish = () => {
+        const toggleFab = () => {
+            isFabOpen.value = !isFabOpen.value;
+        };
+
+        const startPublish = (mode) => {
+            publishMode.value = mode;
+            isFabOpen.value = false;
             isPublishOpen.value = true;
         };
 
@@ -308,7 +316,8 @@ createApp({
                 content: publishContent.value.trim(),
                 timestamp: Date.now(),
                 images: [...publishImages.value],
-                hash: "temp_" + Date.now()
+                hash: "temp_" + Date.now(),
+                layout: publishMode.value
             };
 
             // 添加到所有推文列表头部
@@ -363,12 +372,15 @@ createApp({
             sliderRef,
             prevSlide,
             nextSlide,
+            isFabOpen,
+            toggleFab,
+            publishMode,
+            startPublish,
             isPublishOpen,
             publishTitle,
             publishContent,
             publishImages,
             fileInputRef,
-            openPublish,
             closePublish,
             triggerImageUpload,
             handleImageSelect,

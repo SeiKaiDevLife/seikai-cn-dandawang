@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=19">
+    <link rel="stylesheet" href="index.css?v=20">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -154,31 +154,43 @@
 
             <!-- 独立的详细图文界面 -->
             <div class="detail-view" v-if="selectedPost">
-                <!-- 顶部滑动图片区 -->
-                <div class="detail-slider-container">
+                <!-- 顶部媒体区 (支持普通滑动与九宫格) -->
+                <div class="detail-media-area">
                     <button class="floating-back-btn" @click="closePost">
                         <svg viewBox="0 0 24 24" width="28" height="28" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="15 18 9 12 15 6"></polyline>
                         </svg>
                     </button>
-                    
-                    <div class="detail-slider" @scroll="onSliderScroll" ref="sliderRef">
-                        <div class="slider-item" v-for="(img, index) in selectedPost.images" :key="index">
-                            <img :src="getImageUrlWithHash(img, selectedPost.hash)" loading="lazy">
+
+                    <!-- 九宫格模式 -->
+                    <div class="detail-grid-container" v-if="selectedPost.layout === 'nine-grid'">
+                        <div class="nine-grid-layout">
+                            <div class="grid-cell" v-for="(img, index) in selectedPost.images" :key="index">
+                                <img :src="getImageUrlWithHash(img, selectedPost.hash)" loading="lazy">
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 电脑端左右切换按钮 -->
-                    <div class="slider-arrow slider-prev" @click="prevSlide" v-if="currentSlideIndex > 0">
-                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                    </div>
-                    <div class="slider-arrow slider-next" @click="nextSlide" v-if="selectedPost.images && currentSlideIndex < selectedPost.images.length - 1">
-                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                    </div>
-                    
-                    <!-- 图片指示器 (例如: 1/6) -->
-                    <div class="slider-indicator" v-if="selectedPost.images && selectedPost.images.length > 1">
-                        {{ currentSlideIndex + 1 }} / {{ selectedPost.images.length }}
+                    <!-- 普通全屏滑动模式 -->
+                    <div class="detail-slider-container" v-else>
+                        <div class="detail-slider" @scroll="onSliderScroll" ref="sliderRef">
+                            <div class="slider-item" v-for="(img, index) in selectedPost.images" :key="index">
+                                <img :src="getImageUrlWithHash(img, selectedPost.hash)" loading="lazy">
+                            </div>
+                        </div>
+
+                        <!-- 电脑端左右切换按钮 -->
+                        <div class="slider-arrow slider-prev" @click="prevSlide" v-if="currentSlideIndex > 0">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </div>
+                        <div class="slider-arrow slider-next" @click="nextSlide" v-if="selectedPost.images && currentSlideIndex < selectedPost.images.length - 1">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                        
+                        <!-- 图片指示器 -->
+                        <div class="slider-indicator" v-if="selectedPost.images && selectedPost.images.length > 1">
+                            {{ currentSlideIndex + 1 }} / {{ selectedPost.images.length }}
+                        </div>
                     </div>
                 </div>
 
@@ -194,17 +206,40 @@
                 </div>
             </div>
 
-            <!-- 发布功能悬浮按钮 (FAB) -->
-            <button class="fab-publish" @click="openPublish" v-if="isLoggedIn && !selectedPost">
-                <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            </button>
+            <!-- 展开式发布菜单 (FAB Menu) -->
+            <div class="fab-container" v-if="isLoggedIn && !selectedPost">
+                <div class="fab-menu" :class="{ 'is-open': isFabOpen }">
+                    <div class="fab-action" @click="startPublish('custom')">
+                        <span class="fab-label">自定义</span>
+                        <button class="fab-mini-btn">
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                        </button>
+                    </div>
+                    <div class="fab-action" @click="startPublish('nine-grid')">
+                        <span class="fab-label">九宫格</span>
+                        <button class="fab-mini-btn">
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        </button>
+                    </div>
+                    <div class="fab-action" @click="startPublish('normal')">
+                        <span class="fab-label">普通图文</span>
+                        <button class="fab-mini-btn">
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <button class="fab-main" @click="toggleFab" :class="{ 'is-open': isFabOpen }">
+                    <svg class="fab-icon-plus" viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+            </div>
 
             <!-- 发布图文弹窗 (临时发布) -->
             <div class="publish-overlay" v-if="isPublishOpen" @click.self="closePublish">
                 <div class="publish-container">
                     <div class="publish-header">
                         <button class="cancel-btn" @click="closePublish">取消</button>
-                        <span class="publish-title">发布图文</span>
+                        <span class="publish-title">{{ publishMode === 'nine-grid' ? '发布九宫格' : (publishMode === 'custom' ? '自定义发布' : '发布图文') }}</span>
                         <button class="submit-btn" :disabled="!canSubmit" @click="submitPost">发布</button>
                     </div>
                     
@@ -226,9 +261,9 @@
 
                         <!-- 文本输入区 -->
                         <div class="text-input-section">
-                            <input type="text" class="publish-title-input" v-model="publishTitle" placeholder="填写标题会有更多赞哦~">
+                            <input type="text" class="publish-title-input" v-model="publishTitle" placeholder="添加标题...">
                             <div class="divider-line"></div>
-                            <textarea class="publish-content-input" v-model="publishContent" placeholder="添加正文" rows="6"></textarea>
+                            <textarea class="publish-content-input" v-model="publishContent" placeholder="添加正文内容..." rows="6"></textarea>
                         </div>
                     </div>
                 </div>
@@ -237,6 +272,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=19"></script>
+    <script src="app.js?v=20"></script>
 </body>
 </html>
