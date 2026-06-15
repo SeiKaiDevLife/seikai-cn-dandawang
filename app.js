@@ -147,7 +147,7 @@ createApp({
         const openPost = (post) => {
             selectedPost.value = post;
             currentSlideIndex.value = 0;
-            window.scrollTo({ top: 0, behavior: 'instant' });
+            window.scrollTo({ top: 0, behavior: 'auto' });
         };
 
         const closePost = () => {
