@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=26">
+    <link rel="stylesheet" href="index.css?v=27">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -237,34 +237,19 @@
             <div class="fab-container" v-if="isLoggedIn && !selectedPost">
                 <div class="fab-menu" :class="{ 'is-open': isFabOpen }">
                     <div class="fab-action action-1" @click="startPublish('custom')">
-                        <div class="curved-label">
-                            <svg viewBox="0 0 100 100" width="100" height="100">
-                                <path id="curve-1" d="M 15 65 A 35 35 0 0 1 85 65" fill="transparent"/>
-                                <text><textPath href="#curve-1" startOffset="50%" text-anchor="middle">自定义</textPath></text>
-                            </svg>
-                        </div>
+                        <span class="fab-label">自定义排版</span>
                         <button class="fab-mini-btn">
                             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
                         </button>
                     </div>
                     <div class="fab-action action-2" @click="startPublish('nine-grid')">
-                        <div class="curved-label">
-                            <svg viewBox="0 0 100 100" width="100" height="100">
-                                <path id="curve-2" d="M 15 65 A 35 35 0 0 1 85 65" fill="transparent"/>
-                                <text><textPath href="#curve-2" startOffset="50%" text-anchor="middle">九宫格</textPath></text>
-                            </svg>
-                        </div>
+                        <span class="fab-label">九宫格</span>
                         <button class="fab-mini-btn">
                             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                         </button>
                     </div>
                     <div class="fab-action action-3" @click="startPublish('normal')">
-                        <div class="curved-label">
-                            <svg viewBox="0 0 100 100" width="100" height="100">
-                                <path id="curve-3" d="M 15 65 A 35 35 0 0 1 85 65" fill="transparent"/>
-                                <text><textPath href="#curve-3" startOffset="50%" text-anchor="middle">普通图文</textPath></text>
-                            </svg>
-                        </div>
+                        <span class="fab-label">普通图文</span>
                         <button class="fab-mini-btn">
                             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                         </button>
@@ -272,7 +257,19 @@
                 </div>
                 
                 <button class="fab-main" @click="toggleFab" :class="{ 'is-open': isFabOpen }">
-                    <svg class="fab-icon-plus" viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <!-- The circle state -->
+                    <div class="fab-circle-state">
+                        <svg class="fab-icon-plus" viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </div>
+                    <!-- The paw pad state -->
+                    <div class="fab-paw-state">
+                        <svg viewBox="64 220 384 260" width="48" height="48">
+                            <path fill="currentColor" d="M256 224c-79.41 0-192 122.76-192 200.25 0 34.9 26.81 55.75 71.74 55.75 48.84 0 81.09-25.08 120.26-25.08 39.51 0 71.85 25.08 120.26 25.08 44.93 0 71.74-20.85 71.74-55.75C448 346.76 335.41 224 256 224z" />
+                        </svg>
+                    </div>
                 </button>
             </div>
 
@@ -361,6 +358,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=26"></script>
+    <script src="app.js?v=27"></script>
 </body>
 </html>
