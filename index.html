@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=37">
+    <link rel="stylesheet" href="index.css?v=38">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -112,7 +112,7 @@
                     <div class="waterfall-col">
                         <div class="timeline-post" v-for="post in leftCol" :key="post.id">
                             <!-- 普通图文封面 -->
-                            <div class="post-cover" v-if="post.layout !== 'nine-grid' && post.images && post.images.length > 0" @click="openPost(post, 0)">
+                            <div class="post-cover" v-if="post.layout === 'normal' && post.images && post.images.length > 0" @click="openPost(post, 0)">
                                 <img :src="getImageUrlWithHash(post.images[0], post.hash)" loading="lazy">
                                 <div class="multi-img-icon" v-if="post.images.length > 1">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -148,7 +148,7 @@
                     <div class="waterfall-col">
                         <div class="timeline-post" v-for="post in rightCol" :key="post.id">
                             <!-- 普通图文封面 -->
-                            <div class="post-cover" v-if="post.layout !== 'nine-grid' && post.images && post.images.length > 0" @click="openPost(post, 0)">
+                            <div class="post-cover" v-if="post.layout === 'normal' && post.images && post.images.length > 0" @click="openPost(post, 0)">
                                 <img :src="getImageUrlWithHash(post.images[0], post.hash)" loading="lazy">
                                 <div class="multi-img-icon" v-if="post.images.length > 1">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -165,7 +165,7 @@
                             </div>
                             <!-- 自定义拼图封面 -->
                             <div class="post-custom-grid" v-if="post.layout === 'custom' && post.customGridData" :style="{ gridTemplateRows: `repeat(${post.customRows}, 1fr)` }">
-                                <div class="grid-cover-cell" v-for="(slot, idx) in post.customGridData" :key="idx" :style="{ gridRow: `span ${slot.rowSpan}`, gridColumn: `span ${slot.colSpan}` }" @click="openPost(post, idx)">
+                                <div class="grid-cover-cell" v-for="(slot, idx) in post.customGridData" :key="idx" :style="{ gridRow: `${slot.r + 1} / span ${slot.rowSpan}`, gridColumn: `${slot.c + 1} / span ${slot.colSpan}` }" @click="openPost(post, idx)">
                                     <img :src="getImageUrlWithHash(slot.image, post.hash)" loading="lazy">
                                 </div>
                             </div>
@@ -364,6 +364,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=37"></script>
+    <script src="app.js?v=38"></script>
 </body>
 </html>

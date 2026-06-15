@@ -233,7 +233,6 @@ createApp({
         };
 
         const openPost = (post, index = 0) => {
-            document.body.style.overflow = 'hidden';
             selectedPost.value = post;
             currentSlideIndex.value = index;
             
@@ -253,7 +252,6 @@ createApp({
         };
 
         const closePost = () => {
-            document.body.style.overflow = '';
             selectedPost.value = null;
         };
 
