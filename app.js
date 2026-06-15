@@ -232,10 +232,21 @@ createApp({
             }
         };
 
-        const openPost = (post) => {
+        const openPost = (post, index = 0) => {
             scrollPosition.value = window.scrollY || document.documentElement.scrollTop;
             selectedPost.value = post;
-            currentSlideIndex.value = 0;
+            currentSlideIndex.value = index;
+            
+            // 等待 DOM 渲染完成后，立即滚动到对应的图片位置
+            Vue.nextTick(() => {
+                if (sliderRef.value) {
+                    const sliderWidth = sliderRef.value.clientWidth;
+                    sliderRef.value.scrollTo({
+                        left: index * sliderWidth,
+                        behavior: 'auto' // instant jump
+                    });
+                }
+            });
             setTimeout(() => {
                 window.scrollTo({ top: 0, behavior: 'auto' });
             }, 0);
