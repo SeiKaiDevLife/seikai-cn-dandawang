@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Private Album | Danda & Wang</title>
+    <title>氮氮的相册 | SeiKai & echoofmine</title>
     <link rel="stylesheet" href="index.css?v=1">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
@@ -17,16 +17,16 @@
         <div class="login-container" v-if="!isLoggedIn">
             <div class="glass-card">
                 <div class="avatar-placeholder">🐱</div>
-                <h1 class="title">Our Kitties</h1>
-                <p class="subtitle">Danda & Wang's Memories</p>
+                <h1 class="title">氮氮的相册</h1>
+                <p class="subtitle">SeiKai & echoofmine 的私密日记</p>
                 <form @submit.prevent="handleLogin" class="form">
                     <input 
                         type="password" 
                         v-model="password"
                         :class="['input', { 'error-shake': loginError }]"
-                        placeholder="Enter access code..."
+                        placeholder="请输入查看密码..."
                     />
-                    <button type="submit" class="button">Enter</button>
+                    <button type="submit" class="button">进入相册</button>
                 </form>
             </div>
         </div>
