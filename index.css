@@ -733,8 +733,9 @@ body {
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(0,0,0,0.04);
-  width: 100%;
-  max-width: 320px;
+  width: max-content;
+  min-width: 320px;
+  max-width: 90vw;
   animation: slideDown 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
