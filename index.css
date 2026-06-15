@@ -1107,3 +1107,135 @@ body {
 }
 .publish-content-input::placeholder { color: #ced4da; }
 
+/* ========================================= */
+/* 九宫格超过9张的遮罩 & 自定义布局拼图 (Custom Grid) */
+/* ========================================= */
+.more-images-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  backdrop-filter: blur(2px);
+}
+
+.post-custom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+/* 发布弹窗 - 自定义拼图编辑器 */
+.custom-grid-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.custom-grid-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+}
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+.controls-row input {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.controls-actions {
+  display: flex;
+  gap: 8px;
+}
+.merge-btn, .reset-btn, .confirm-layout-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+.merge-btn { background: #ff922b; color: white; }
+.reset-btn { background: #e9ecef; color: #495057; }
+.confirm-layout-btn { background: #20c997; color: white; }
+.merge-btn:hover, .reset-btn:hover, .confirm-layout-btn:hover { opacity: 0.8; }
+
+.fill-hint {
+  font-size: 0.9rem;
+  color: #ff922b;
+  font-weight: 600;
+  margin: 0;
+}
+
+.custom-grid-editor {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  background: #e9ecef;
+  padding: 4px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.custom-slot {
+  background: #fff;
+  border-radius: 4px;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.2s;
+}
+
+.custom-slot.selected {
+  border: 2px solid #ff922b;
+  background: #fff4e6;
+}
+
+.slot-placeholder {
+  font-size: 0.9rem;
+  color: #adb5bd;
+  font-weight: 500;
+  pointer-events: none;
+}
+.custom-slot.selected .slot-placeholder { color: #ff922b; }
+
+.custom-slot img {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.custom-slot.has-image:hover::after {
+  content: '替换';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  z-index: 2;
+}

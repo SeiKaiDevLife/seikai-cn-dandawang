@@ -273,6 +273,63 @@ createApp({
         const publishImages = ref([]);
         const fileInputRef = ref(null);
 
+        // 自定义网格状态
+        const customGridRows = ref(3);
+        const customGridSlots = ref([]);
+        const customGridState = ref('edit-layout'); // 'edit-layout' | 'fill-images'
+        const currentUploadSlotId = ref(null);
+
+        const initCustomGrid = () => {
+            let slots = [];
+            for (let r = 0; r < customGridRows.value; r++) {
+                for (let c = 0; c < 3; c++) {
+                    slots.push({ id: `r${r}c${c}`, r, c, rowSpan: 1, colSpan: 1, image: null, selected: false });
+                }
+            }
+            customGridSlots.value = slots;
+            customGridState.value = 'edit-layout';
+        };
+
+        const toggleSlotSelection = (slot) => {
+            if (customGridState.value === 'edit-layout') {
+                slot.selected = !slot.selected;
+            } else if (customGridState.value === 'fill-images') {
+                currentUploadSlotId.value = slot.id;
+                fileInputRef.value.click();
+            }
+        };
+
+        const mergeSlots = () => {
+            const selected = customGridSlots.value.filter(s => s.selected);
+            if (selected.length < 2) return;
+            const minR = Math.min(...selected.map(s => s.r));
+            const maxR = Math.max(...selected.map(s => s.r + s.rowSpan - 1));
+            const minC = Math.min(...selected.map(s => s.c));
+            const maxC = Math.max(...selected.map(s => s.c + s.colSpan - 1));
+            
+            const expectedArea = (maxR - minR + 1) * (maxC - minC + 1);
+            const actualArea = selected.reduce((sum, s) => sum + (s.rowSpan * s.colSpan), 0);
+            
+            if (expectedArea !== actualArea) {
+                alert('请选择一个完整的矩形区域进行合并！');
+                return;
+            }
+            
+            customGridSlots.value = customGridSlots.value.filter(s => !s.selected);
+            customGridSlots.value.push({
+                id: `r${minR}c${minC}_merged_${Date.now()}`,
+                r: minR, c: minC,
+                rowSpan: maxR - minR + 1,
+                colSpan: maxC - minC + 1,
+                image: null,
+                selected: false
+            });
+        };
+
+        const resetCustomGrid = () => {
+            initCustomGrid();
+        };
+
         const toggleFab = () => {
             isFabOpen.value = !isFabOpen.value;
         };
@@ -281,6 +338,9 @@ createApp({
             publishMode.value = mode;
             isFabOpen.value = false;
             isPublishOpen.value = true;
+            if (mode === 'custom') {
+                initCustomGrid();
+            }
         };
 
         const closePublish = () => {
@@ -296,18 +356,30 @@ createApp({
 
         const handleImageSelect = (e) => {
             const files = Array.from(e.target.files);
-            const remainingSlots = 9 - publishImages.value.length;
-            const filesToProcess = files.slice(0, remainingSlots);
+            
+            if (publishMode.value === 'custom') {
+                if (files.length > 0 && currentUploadSlotId.value) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        const slot = customGridSlots.value.find(s => s.id === currentUploadSlotId.value);
+                        if (slot) slot.image = ev.target.result;
+                        e.target.value = '';
+                    };
+                    reader.readAsDataURL(files[0]);
+                }
+            } else {
+                const remainingSlots = 99 - publishImages.value.length; // 允许超过9张
+                const filesToProcess = files.slice(0, remainingSlots);
 
-            filesToProcess.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    publishImages.value.push(e.target.result);
-                };
-                reader.readAsDataURL(file);
-            });
-            // 重置 input 以允许再次选择同一文件
-            e.target.value = '';
+                filesToProcess.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        publishImages.value.push(ev.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                });
+                e.target.value = '';
+            }
         };
 
         const removeImage = (idx) => {
@@ -315,20 +387,43 @@ createApp({
         };
 
         const canSubmit = Vue.computed(() => {
-            return publishImages.value.length > 0 && (publishTitle.value.trim() !== '' || publishContent.value.trim() !== '');
+            if (publishMode.value === 'custom') {
+                return customGridState.value === 'fill-images' && customGridSlots.value.every(s => s.image !== null);
+            }
+            return publishImages.value.length > 0;
         });
 
         const submitPost = () => {
             if (!canSubmit.value) return;
+
+            let finalImages = [];
+            let postLayout = publishMode.value;
+            let customGridData = null;
+            let customRows = null;
+
+            if (publishMode.value === 'custom') {
+                // sort slots so images array is ordered left-to-right, top-to-bottom based on (r, c)
+                const sortedSlots = [...customGridSlots.value].sort((a, b) => {
+                    if (a.r !== b.r) return a.r - b.r;
+                    return a.c - b.c;
+                });
+                finalImages = sortedSlots.map(s => s.image);
+                customGridData = customGridSlots.value;
+                customRows = customGridRows.value;
+            } else {
+                finalImages = [...publishImages.value];
+            }
 
             const newPost = {
                 id: "temp_" + Date.now(),
                 title: publishTitle.value.trim(),
                 content: publishContent.value.trim(),
                 timestamp: Date.now(),
-                images: [...publishImages.value],
+                images: finalImages,
                 hash: "temp_" + Date.now(),
-                layout: publishMode.value
+                layout: postLayout,
+                customGridData,
+                customRows
             };
 
             // 添加到所有推文列表头部
@@ -392,6 +487,13 @@ createApp({
             publishContent,
             publishImages,
             fileInputRef,
+            customGridRows,
+            customGridSlots,
+            customGridState,
+            initCustomGrid,
+            toggleSlotSelection,
+            mergeSlots,
+            resetCustomGrid,
             closePublish,
             triggerImageUpload,
             handleImageSelect,
