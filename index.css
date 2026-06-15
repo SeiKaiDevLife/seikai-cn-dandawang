@@ -1364,123 +1364,90 @@ body {
     transform: scale(1) rotate(-25deg); /* Pad angled slightly left */
 }
 
-/* Toe Beans (Action Buttons) */
-.fab-action { 
-    width: 44px !important; height: 56px !important; 
-    top: 4px !important; left: 10px !important; /* Centered relative to 64px main */
-}
-
-.fab-mini-btn {
-    width: 100% !important; height: 100% !important;
-    border-radius: 50% 50% 45% 45% !important; /* Teardrop/Oval toe bean shape */
-    background: #ff922b !important;
-    color: white !important;
-    box-shadow: 0 4px 12px rgba(255, 146, 43, 0.3) !important;
-    transition: transform 0.2s, filter 0.2s !important;
-}
-.fab-mini-btn:hover { filter: brightness(1.1); }
-
-/* Toe Positions */
-.fab-menu.is-open .fab-action.action-3 { transform: translate(-80px, -30px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-2 { transform: translate(-45px, -80px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-1 { transform: translate(15px, -70px) scale(1) !important; }
-
-/* Toe Rotations */
-.fab-action.action-3 .fab-mini-btn { transform: rotate(-65deg); }
-.fab-action.action-2 .fab-mini-btn { transform: rotate(-25deg); }
-.fab-action.action-1 .fab-mini-btn { transform: rotate(15deg); }
-
-/* Hover scale combined with rotation */
-.fab-action.action-3 .fab-mini-btn:hover { transform: rotate(-65deg) scale(1.1); }
-.fab-action.action-2 .fab-mini-btn:hover { transform: rotate(-25deg) scale(1.1); }
-.fab-action.action-1 .fab-mini-btn:hover { transform: rotate(15deg) scale(1.1); }
-
-/* Remove old curved SVG text */
-.curved-label { display: none !important; }
-
-/* Clean, standard labels on the left */
-.fab-label {
-    display: block !important;
-    position: absolute;
-    right: 60px !important; /* Left of the button */
-    top: 50% !important; transform: translateY(-50%) !important;
-    background: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(8px) !important;
-    padding: 6px 12px !important;
-    border-radius: 8px !important;
-    font-size: 0.85rem !important;
-    font-weight: 600 !important;
-    color: #495057 !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
-    white-space: nowrap !important;
-    opacity: 0;
-    transition: opacity 0.3s 0.2s !important;
-    pointer-events: none;
-}
-.fab-menu.is-open .fab-label { opacity: 1 !important; }
 /* ========================================= */
-/* SUPER CUTE PINK PAW REDESIGN */
+/* FINAL ORANGE PAW REDESIGN */
 /* ========================================= */
 .fab-container { width: 64px !important; height: 64px !important; }
+
+/* Main Button (Circle when closed, invisible when open to show massive pad) */
 .fab-main { 
     width: 64px !important; height: 64px !important; 
     border-radius: 50% !important;
-    background: transparent !important;
-    box-shadow: none !important;
+    background: linear-gradient(135deg, #ffc078 0%, #ff922b 100%) !important;
+    box-shadow: 0 8px 24px rgba(255, 146, 43, 0.4) !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
     position: relative;
     overflow: visible !important;
     border: none !important;
 }
 
 .fab-main.is-open {
-    transform: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important; /* No rotation */
 }
 
-/* State 1: Closed - Full Cat Paw */
-.fab-paw-closed-state {
-    position: absolute; inset: -5px;
+/* State 1: Default Circle with + */
+.fab-circle-state {
+    position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    color: #ff8da1; /* Cute soft pink */
-    filter: drop-shadow(0 6px 16px rgba(255, 141, 161, 0.4));
-    transform: rotate(-15deg);
+    transition: all 0.3s ease;
+    color: white;
 }
-.fab-main.is-open .fab-paw-closed-state {
-    opacity: 0; transform: scale(0.5) rotate(-45deg);
+.fab-main.is-open .fab-circle-state {
+    opacity: 0; transform: scale(0.5) rotate(90deg);
 }
 
-/* State 2: Open - Pad Only */
+/* State 2: Massive Paw Pad when open */
 .fab-paw-open-state {
-    position: absolute; inset: -5px;
+    position: absolute; inset: -15px; /* Extremely large to scale up the pad */
     display: flex; align-items: center; justify-content: center;
     opacity: 0;
-    transform: scale(0.5) rotate(0deg);
+    transform: scale(0.5) rotate(-30deg); /* Start rotated and small */
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    color: #ff8da1;
-    filter: drop-shadow(0 6px 16px rgba(255, 141, 161, 0.4));
+    color: #ff922b;
+    filter: drop-shadow(0 6px 16px rgba(255, 146, 43, 0.4));
 }
 .fab-main.is-open .fab-paw-open-state {
     opacity: 1;
-    transform: scale(1) rotate(-15deg);
+    transform: scale(1) rotate(0deg); /* Massive and upright */
 }
+
+/* Hide text labels entirely for now */
+.fab-label { display: none !important; }
+.curved-label { display: none !important; }
 
 /* Toe Beans (Action Buttons) */
 .fab-action { 
-    width: 44px !important; height: 56px !important; 
-    top: 4px !important; left: 10px !important;
+    width: 36px !important; height: 48px !important; /* Smaller toes compared to massive pad */
+    top: 8px !important; left: 14px !important;
 }
 
 .fab-mini-btn {
     width: 100% !important; height: 100% !important;
     border-radius: 50% 50% 45% 45% !important; /* Teardrop shape */
-    background: #ff8da1 !important; /* Cute pink */
+    background: #ff922b !important;
     color: white !important;
-    box-shadow: 0 4px 12px rgba(255, 141, 161, 0.4) !important;
+    box-shadow: 0 4px 12px rgba(255, 146, 43, 0.4) !important;
     transition: transform 0.2s, filter 0.2s !important;
     border: none !important;
 }
-.fab-mini-btn:hover { filter: brightness(1.05) saturate(1.1); }
+.fab-mini-btn:hover { filter: brightness(1.1); }
 
-/* Remove old circle state rules if they exist */
-.fab-circle-state { display: none !important; }
-.fab-paw-state { display: none !important; }
+/* Toe Positions forming a beautiful paw around the massive pad */
+.fab-menu.is-open .fab-action.action-3 { transform: translate(-80px, -20px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-2 { transform: translate(-50px, -70px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-1 { transform: translate(15px, -65px) scale(1) !important; }
+
+/* Toe Rotations */
+.fab-action.action-3 .fab-mini-btn { transform: rotate(-55deg); }
+.fab-action.action-2 .fab-mini-btn { transform: rotate(-15deg); }
+.fab-action.action-1 .fab-mini-btn { transform: rotate(25deg); }
+
+/* Hover scale combined with rotation */
+.fab-action.action-3 .fab-mini-btn:hover { transform: rotate(-55deg) scale(1.1); }
+.fab-action.action-2 .fab-mini-btn:hover { transform: rotate(-15deg) scale(1.1); }
+.fab-action.action-1 .fab-mini-btn:hover { transform: rotate(25deg) scale(1.1); }
+
+/* Ensure legacy elements are hidden */
+.fab-paw-closed-state { display: none !important; }
