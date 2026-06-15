@@ -1142,10 +1142,13 @@ body {
   gap: 2px;
   border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 10px;
 }
 
-/* 发布弹窗 - 自定义拼图编辑器 */
+.post-custom-grid .grid-cover-cell {
+  aspect-ratio: auto !important;
+}
+
+/* 发布界面 - 自定义拼图编辑区 */
 .custom-grid-section {
   display: flex;
   flex-direction: column;
@@ -1209,7 +1212,6 @@ body {
 .custom-slot {
   background: #fff;
   border-radius: 4px;
-  min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;

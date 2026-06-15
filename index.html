@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=40">
+    <link rel="stylesheet" href="index.css?v=41">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -128,7 +128,7 @@
                                 </div>
                             </div>
                             <!-- 自定义拼图封面 -->
-                            <div class="post-custom-grid" v-if="post.layout === 'custom' && post.customGridData" :style="{ gridTemplateRows: `repeat(${post.customRows}, 1fr)` }">
+                            <div class="post-custom-grid" v-if="post.layout === 'custom' && post.customGridData" :style="{ gridTemplateRows: `repeat(${post.customRows}, 1fr)`, aspectRatio: `3 / ${post.customRows}` }">
                                 <div class="grid-cover-cell" v-for="(slot, idx) in post.customGridData" :key="idx" :style="{ gridRow: `${slot.r + 1} / span ${slot.rowSpan}`, gridColumn: `${slot.c + 1} / span ${slot.colSpan}` }" @click="openPost(post, idx)">
                                     <img :src="getImageUrlWithHash(slot.image, post.hash)" loading="lazy">
                                 </div>
@@ -164,7 +164,7 @@
                                 </div>
                             </div>
                             <!-- 自定义拼图封面 -->
-                            <div class="post-custom-grid" v-if="post.layout === 'custom' && post.customGridData" :style="{ gridTemplateRows: `repeat(${post.customRows}, 1fr)` }">
+                            <div class="post-custom-grid" v-if="post.layout === 'custom' && post.customGridData" :style="{ gridTemplateRows: `repeat(${post.customRows}, 1fr)`, aspectRatio: `3 / ${post.customRows}` }">
                                 <div class="grid-cover-cell" v-for="(slot, idx) in post.customGridData" :key="idx" :style="{ gridRow: `${slot.r + 1} / span ${slot.rowSpan}`, gridColumn: `${slot.c + 1} / span ${slot.colSpan}` }" @click="openPost(post, idx)">
                                     <img :src="getImageUrlWithHash(slot.image, post.hash)" loading="lazy">
                                 </div>
@@ -316,7 +316,7 @@
                                 @touchend="onDragEnd"
                                 @mouseup="onDragEnd"
                                 @mouseleave="onDragEnd"
-                                :style="{ gridTemplateRows: `repeat(${customGridRows}, 1fr)` }">
+                                :style="{ gridTemplateRows: `repeat(${customGridRows}, 1fr)`, aspectRatio: `3 / ${customGridRows}` }">
                                 <div class="custom-slot" 
                                     v-for="slot in customGridSlots" 
                                     :key="slot.id"
@@ -365,6 +365,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=40"></script>
+    <script src="app.js?v=41"></script>
 </body>
 </html>
