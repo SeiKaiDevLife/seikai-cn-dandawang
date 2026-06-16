@@ -166,8 +166,12 @@ body {
 .hero-section {
   position: relative;
   width: 100%;
-  /* 高度固定，随宽度增大头图向上顶出，保证下边缘不变 */
-  height: 520px;
+  /*
+   * 头图高度规则：
+   * - 宽度 < 1040px 时：固定 520px，图像向上溢出（下边缘不变）
+   * - 宽度 ≥ 1040px 时：高度跟随宽度的一半（2:1 比例），下边缘仍由 background-position: bottom 锚定
+   */
+  height: max(520px, 50vw);
   background-color: #ffd8a8;
   overflow: hidden;
 }

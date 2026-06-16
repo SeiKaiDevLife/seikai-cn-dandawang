@@ -385,7 +385,9 @@ createApp({
             // 6列 * 400px + 5个16px gap + 32px padding = 2512px
             const winWidth = window.innerWidth;
             const containerWidth = Math.min(winWidth, 2512);
-            const numCols = Math.max(2, Math.min(6, Math.ceil((containerWidth - 16) / 416)));
+            const numColsByWidth = Math.max(1, Math.min(6, Math.ceil((containerWidth - 32) / 416)));
+            // 内容不足时，只生成实际内容对应的列数，避免产生空列
+            const numCols = Math.min(numColsByWidth, Math.max(1, filteredPosts.value.length));
             lastColCount = numCols;
 
             let tempCols = Array.from({ length: numCols }, () => []);
@@ -430,7 +432,8 @@ createApp({
             }
             
             if (renderId === currentRenderId) {
-                columns.value = tempCols;
+                // 过滤掉空列（防御性处理）
+                columns.value = tempCols.filter(col => col.length > 0);
             }
         };
 
@@ -1378,18 +1381,13 @@ createApp({
             });
         };
 
-        // 监听视口宽度变化，只有在列数发生变化时才触发 posts 的重新分配
+        // 监听视口宽度变化，防抖后重新分配（distributePosts 内部自行判断列数）
         let resizeTimeout = null;
         const handleResize = () => {
             if (resizeTimeout) clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
-                const winWidth = window.innerWidth;
-                const containerWidth = Math.min(winWidth, 2512);
-                const numCols = Math.max(2, Math.min(6, Math.ceil((containerWidth - 16) / 416)));
-                if (numCols !== lastColCount) {
-                    distributePosts();
-                }
-            }, 100);
+                distributePosts();
+            }, 120);
         };
 
         onMounted(() => {
