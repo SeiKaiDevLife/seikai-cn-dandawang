@@ -1174,6 +1174,13 @@ createApp({
                             console.warn(`删除视频失败: ${post.video}`, e);
                         }
                     }
+                    if (post.videoRaw) {
+                        try {
+                            await client.delete(`dandawang/public/${post.videoRaw}`);
+                        } catch (e) {
+                            console.warn(`删除原始视频失败: ${post.videoRaw}`, e);
+                        }
+                    }
                     
                     // 2. 删除评论里的图片
                     if (post.comments && post.comments.length > 0) {
