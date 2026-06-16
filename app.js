@@ -246,11 +246,50 @@ createApp({
             distributePosts();
         };
 
-        // 获取图片地址并处理 Data URL (临时发布的图片不支持加 ?v=后缀)
-        const getImageUrlWithHash = (img, hash) => {
+        // 获取图片地址并处理 Data URL (支持动态 OSS 图片尺寸裁剪与 CDN 缓存命中优化)
+        const RESIZE_BUCKETS = [300, 500, 800, 1200, 1500];
+        const getImageUrlWithHash = (img, hash, sizeCategory = null, colSpan = 1) => {
             const url = typeof img === 'string' ? img : img.url;
             if (url.startsWith('data:')) return url;
-            return ASSET_BASE + url + '?v=' + hash;
+            
+            let finalUrl = ASSET_BASE + url + '?v=' + hash;
+            
+            if (sizeCategory) {
+                let displayWidthCss = 300; // 默认回退值
+                
+                const winWidth = window.innerWidth;
+                const containerWidth = Math.min(winWidth, 1200) - 32;
+                const colWidthCss = (containerWidth - 16) / 2; // 双列瀑布流单列宽度
+                
+                if (sizeCategory === 'normal-cover') {
+                    displayWidthCss = colWidthCss;
+                } else if (sizeCategory === 'grid-cover') {
+                    displayWidthCss = colWidthCss / 3;
+                } else if (sizeCategory === 'custom-cover') {
+                    displayWidthCss = (colWidthCss / 3) * colSpan;
+                } else if (sizeCategory === 'detail') {
+                    displayWidthCss = Math.min(winWidth, 600);
+                }
+                
+                // 结合设备像素比计算物理像素，上限设为 2.0 (兼顾高清度与流量)
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                const targetPhysicalWidth = Math.round(displayWidthCss * dpr);
+                
+                // 尺寸阶梯（Bucketing）取整匹配
+                let matchedWidth = null;
+                for (const bucket of RESIZE_BUCKETS) {
+                    if (targetPhysicalWidth <= bucket) {
+                        matchedWidth = bucket;
+                        break;
+                    }
+                }
+                
+                if (matchedWidth) {
+                    finalUrl += `&x-oss-process=image/resize,w_${matchedWidth}`;
+                }
+            }
+            
+            return finalUrl;
         };
 
         let currentRenderId = 0;
@@ -267,7 +306,8 @@ createApp({
                 let ratio = 1; // 默认 1:1
                 if (post.images && post.images.length > 0) {
                     try {
-                        const imgUrl = getImageUrlWithHash(post.images[0], post.hash);
+                        // 在 distributePosts 中仅仅需要加载图片提取宽高比例，使用最小的 grid-cover (通常是 300px) 即可，大大节省网络流量
+                        const imgUrl = getImageUrlWithHash(post.images[0], post.hash, 'grid-cover');
                         ratio = await new Promise((resolve) => {
                             const img = new Image();
                             img.onload = () => resolve(img.height / img.width);
