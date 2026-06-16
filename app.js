@@ -347,7 +347,7 @@ createApp({
         };
 
         // 获取图片地址并处理 Data URL (支持动态 OSS 图片尺寸裁剪与 CDN 缓存命中优化)
-        const RESIZE_BUCKETS = [300, 500, 800, 1200, 1500];
+        const RESIZE_BUCKETS = [100, 300, 500, 800, 1000, 1200, 1500];
         const getImageUrlWithHash = (img, hash, sizeCategory = null, colSpan = 1) => {
             const url = typeof img === 'string' ? img : img.url;
             if (url.startsWith('data:')) return url;
