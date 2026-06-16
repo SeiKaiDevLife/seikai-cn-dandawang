@@ -324,6 +324,7 @@ body {
   margin: 0 auto;
   padding: 0 16px;
   display: flex;
+  justify-content: center;
   gap: 16px;
   align-items: flex-start;
 }
