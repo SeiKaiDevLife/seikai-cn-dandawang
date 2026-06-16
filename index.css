@@ -1447,8 +1447,8 @@ body {
 
 /* Toe Beans (Action Buttons) */
 .fab-action { 
-    width: 45px !important; height: 48px !important; /* 1.25x fatter minor axis */
-    top: 8px !important; left: 10px !important;
+    width: 38px !important; height: 46px !important; /* Slimmer profile */
+    top: 9px !important; left: 13px !important;
     z-index: 10;
 }
 
@@ -1464,21 +1464,21 @@ body {
 .fab-mini-btn:hover { filter: brightness(1.1); }
 
 /* Toe Positions forming a beautiful paw around the massive pad */
-.fab-menu.is-open .fab-action.action-3 { transform: translate(-72px, 4px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-2 { transform: translate(-54px, -46px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-1 { transform: translate(-14px, -70px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-4 { transform: translate(34px, -62px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-3 { transform: translate(-69px, -12px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-2 { transform: translate(-51px, -48px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-1 { transform: translate(-16px, -68px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-4 { transform: translate(24px, -66px) scale(1) !important; }
 
 /* Toe Rotations */
-.fab-action.action-3 .fab-mini-btn { transform: rotate(-85deg); }
-.fab-action.action-2 .fab-mini-btn { transform: rotate(-50deg); }
-.fab-action.action-1 .fab-mini-btn { transform: rotate(-15deg); }
+.fab-action.action-3 .fab-mini-btn { transform: rotate(-80deg); }
+.fab-action.action-2 .fab-mini-btn { transform: rotate(-47deg); }
+.fab-action.action-1 .fab-mini-btn { transform: rotate(-13deg); }
 .fab-action.action-4 .fab-mini-btn { transform: rotate(20deg); }
 
 /* Hover scale combined with rotation */
-.fab-action.action-3 .fab-mini-btn:hover { transform: rotate(-85deg) scale(1.1); }
-.fab-action.action-2 .fab-mini-btn:hover { transform: rotate(-50deg) scale(1.1); }
-.fab-action.action-1 .fab-mini-btn:hover { transform: rotate(-15deg) scale(1.1); }
+.fab-action.action-3 .fab-mini-btn:hover { transform: rotate(-80deg) scale(1.1); }
+.fab-action.action-2 .fab-mini-btn:hover { transform: rotate(-47deg) scale(1.1); }
+.fab-action.action-1 .fab-mini-btn:hover { transform: rotate(-13deg) scale(1.1); }
 .fab-action.action-4 .fab-mini-btn:hover { transform: rotate(20deg) scale(1.1); }
 
 /* Ensure legacy elements are hidden */
