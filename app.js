@@ -3,7 +3,7 @@ const { createApp, ref, onMounted } = Vue;
 const CORRECT_HASH = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92";
 
 // 密文常量：使用 window.encryptOSSCredentials 生成后粘贴到这里
-const ENCRYPTED_CREDENTIALS = "";
+const ENCRYPTED_CREDENTIALS = "U2FsdGVkX1/i31BRGbRy36MiahjHqdC4XyFWIhGFH9yWsfqzZ2pKOUrNry7SEsk2eiw1go5E5cCdi5NCP4HaUoGDy8UIV7P1NUuBpJfUNZGvQ9YZBefKFyO9WL26pafp";
 
 // 挂载辅助加密函数，方便生成密文（全局作用域）
 window.encryptOSSCredentials = (ak, sk, pwd) => {
