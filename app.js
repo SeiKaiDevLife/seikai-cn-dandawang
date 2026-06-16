@@ -451,7 +451,8 @@ createApp({
             // 6列 * 400px + 5个16px gap + 32px padding = 2512px
             const winWidth = window.innerWidth;
             const containerWidth = Math.min(winWidth, 2512);
-            const numColsByWidth = Math.max(1, Math.min(6, Math.ceil((containerWidth - 32) / 416)));
+            // 手机/移动端（视口宽度 < 768px）强制至少两列，保证小红书式的双列瀑布流排版；桌面端根据宽度在 2-6 列之间自适应
+            const numColsByWidth = winWidth < 768 ? 2 : Math.max(2, Math.min(6, Math.ceil((containerWidth - 32) / 416)));
             // 内容不足时，只生成实际内容对应的列数，避免产生空列
             const numCols = Math.min(numColsByWidth, Math.max(1, filteredPosts.value.length));
             lastColCount = numCols;
