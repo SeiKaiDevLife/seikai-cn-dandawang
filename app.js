@@ -1500,6 +1500,7 @@ createApp({
                 let customGridData = null;
                 let customRows = null;
                 let relativeVideoPath = '';
+                let actualVideoRawPath = '';
                 
                 if (publishMode.value === 'custom') {
                     const sortedSlots = [...customGridSlots.value].sort((a, b) => {
@@ -1528,6 +1529,7 @@ createApp({
                     const ts = Date.now();
                     const ext = videoFile.name.split('.').pop() || 'mp4';
                     const rawPath = `video/raw/${ts}.${ext}`;
+                    actualVideoRawPath = rawPath; // 记录下来
                     relativeVideoPath = `video/compress/${ts}.${ext}`;
                     const ossKey = `dandawang/public/${rawPath}`;
                     
@@ -1597,7 +1599,7 @@ createApp({
                     content: publishContent.value.trim(),
                     images: finalImages,
                     video: relativeVideoPath || undefined,
-                    videoRaw: publishMode.value === 'video' ? `video/raw/${Date.now()}.${publishVideoFile.value?.name.split('.').pop() || 'mp4'}` : undefined,
+                    videoRaw: actualVideoRawPath || undefined,
                     customGridData,
                     customRows,
                     layout_config: customGridData, // 兼容老的字段
