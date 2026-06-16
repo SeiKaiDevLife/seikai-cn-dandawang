@@ -347,6 +347,8 @@ createApp({
                     displayWidthCss = (colWidthCss / 3) * colSpan;
                 } else if (sizeCategory === 'detail') {
                     displayWidthCss = Math.min(winWidth, 600);
+                } else if (sizeCategory === 'hero') {
+                    displayWidthCss = winWidth;
                 }
                 
                 // 结合设备像素比计算物理像素，上限设为 2.0 (兼顾高清度与流量)
@@ -360,6 +362,11 @@ createApp({
                         matchedWidth = bucket;
                         break;
                     }
+                }
+                
+                // 若超出最大 bucket 范围，使用最大 bucket 限制以符合 OSS 统一 Resize 规则
+                if (!matchedWidth) {
+                    matchedWidth = RESIZE_BUCKETS[RESIZE_BUCKETS.length - 1];
                 }
                 
                 if (matchedWidth) {
