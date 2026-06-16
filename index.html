@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=61">
+    <link rel="stylesheet" href="index.css?v=62">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -62,15 +62,23 @@
                     <p class="profile-bio">SeiKai & Echo 的宝贝米努特 🐾<br>每天都在吃和睡之间疯狂试探</p>
                     
                     <div class="stats-row">
-                        <div class="stat-item">
-                            <span class="stat-num">{{ meta.totalPosts || 0 }}</span>
+                        <div class="stat-item" :class="{ active: currentTab === 'posts' }" @click="setTab('posts')">
+                            <span class="stat-num">{{ posts.length }}</span>
                             <span class="stat-label">相册图文</span>
+                        </div>
+                        <div class="stat-item" :class="{ active: currentTab === 'photos' }" @click="setTab('photos')">
+                            <span class="stat-num">{{ totalPhotosCount }}</span>
+                            <span class="stat-label">相片</span>
+                        </div>
+                        <div class="stat-item" :class="{ active: currentTab === 'favorites' }" @click="setTab('favorites')">
+                            <span class="stat-num">{{ favoritedPostsCount }}</span>
+                            <span class="stat-label">收藏图文</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- 嵌入式悬浮搜索区 (高级美化版) -->
-                <div class="elegant-search-section">
+                <div class="elegant-search-section" v-if="currentTab === 'posts' || currentTab === 'favorites'">
                     <div class="search-bar-container">
                         <div class="search-input-box">
                             <svg class="icon-search" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -109,7 +117,7 @@
                 </div>
 
                 <!-- 小红书风格瀑布流展示区 -->
-                <div class="waterfall-container">
+                <div class="waterfall-container" v-if="currentTab === 'posts' || currentTab === 'favorites'">
                     <!-- 左列 -->
                     <div class="waterfall-col">
                         <div class="timeline-post" v-for="post in leftCol" :key="post.id">
@@ -180,6 +188,13 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- 相册照片 3列1:1裁切网格展示区 -->
+                <div class="photos-grid-container" v-if="currentTab === 'photos'">
+                    <div class="photo-grid-item" v-for="(photo, idx) in allPhotos" :key="idx" @click="openPhotoLightbox(photo)">
+                        <img :src="getImageUrlWithHash(photo.url, photo.post.hash || photo.post.timestamp, 'grid-cover')" loading="lazy" alt="Grid Photo">
                     </div>
                 </div>
                 
@@ -515,9 +530,37 @@
                 </div>
             </div>
 
+            <!-- 相片大图查看弹窗 -->
+            <div class="photo-lightbox-overlay" v-if="selectedPhoto" @click.self="closePhotoLightbox">
+                <div class="photo-lightbox-card glass-card animate-fade-in">
+                    <button class="photo-lightbox-close" @click="closePhotoLightbox">✕</button>
+                    <div class="photo-lightbox-img-wrapper">
+                        <img :src="getImageUrlWithHash(selectedPhoto.url, selectedPhoto.post.hash || selectedPhoto.post.timestamp)" alt="Full Size Photo">
+                    </div>
+                    <div class="photo-lightbox-info">
+                        <h3 class="photo-lightbox-title">{{ selectedPhoto.post.title || '无标题' }}</h3>
+                        <p class="photo-lightbox-content" v-if="selectedPhoto.post.content">{{ selectedPhoto.post.content }}</p>
+                        <button class="photo-lightbox-link" @click="viewFullPostFromPhoto(selectedPhoto)">
+                            查看完整图文 
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-left:4px;">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 评论大图查看弹窗 -->
+            <div class="comment-lightbox-overlay" v-if="selectedCommentImage" @click.self="closeCommentImageLightbox">
+                <button class="comment-lightbox-close" @click="closeCommentImageLightbox">✕</button>
+                <div class="comment-lightbox-img-wrapper">
+                    <img :src="getImageUrlWithHash(selectedCommentImage.url, selectedCommentImage.hash)" class="comment-lightbox-img" alt="Full Size Comment Image">
+                </div>
+            </div>
+
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=61"></script>
+    <script src="app.js?v=62"></script>
 </body>
 </html>

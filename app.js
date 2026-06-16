@@ -1,4 +1,4 @@
-const { createApp, ref, onMounted } = Vue;
+const { createApp, ref, onMounted, computed } = Vue;
 
 const CORRECT_HASH = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92";
 
@@ -160,7 +160,7 @@ createApp({
                 if (isSearchActive.value) {
                     applySearch();
                 } else {
-                    filteredPosts.value = posts.value;
+                    filteredPosts.value = getBasePosts();
                     distributePosts();
                 }
             } catch (e) {
@@ -196,11 +196,73 @@ createApp({
         const searchStatusText = ref('');
         const filteredPosts = ref([]);
         const showDateFilter = ref(false);
+        const currentTab = ref('posts');
+
+        const getBasePosts = () => {
+            if (currentTab.value === 'favorites') {
+                const user = username.value || 'seikai';
+                const userFavs = favorites.value[user] || [];
+                return posts.value.filter(p => userFavs.includes(p.id));
+            }
+            return posts.value;
+        };
+
+        const setTab = (tab) => {
+            currentTab.value = tab;
+            clearSearch();
+        };
+
+        const totalPhotosCount = computed(() => {
+            return posts.value.reduce((sum, p) => sum + (p.images ? p.images.length : 0), 0);
+        });
+
+        const favoritedPostsCount = computed(() => {
+            const user = username.value || 'seikai';
+            const userFavs = favorites.value[user] || [];
+            return userFavs.length;
+        });
+
+        const allPhotos = computed(() => {
+            const list = [];
+            posts.value.forEach(post => {
+                if (post.images && post.images.length > 0) {
+                    post.images.forEach((img, idx) => {
+                        list.push({
+                            url: typeof img === 'string' ? img : img.url,
+                            index: idx,
+                            post: post
+                        });
+                    });
+                }
+            });
+            return list;
+        });
+
+        const selectedPhoto = ref(null);
+        const openPhotoLightbox = (photo) => {
+            selectedPhoto.value = photo;
+        };
+        const closePhotoLightbox = () => {
+            selectedPhoto.value = null;
+        };
+
+        const selectedCommentImage = ref(null);
+        const openCommentImageLightbox = (imgUrl, hash) => {
+            selectedCommentImage.value = { url: imgUrl, hash: hash };
+        };
+        const closeCommentImageLightbox = () => {
+            selectedCommentImage.value = null;
+        };
+
+        const viewFullPostFromPhoto = (photo) => {
+            selectedPhoto.value = null;
+            openPost(photo.post, photo.index);
+        };
 
         const applySearch = () => {
             isSearchActive.value = true;
             showDateFilter.value = false;
-            let res = posts.value;
+            let res = getBasePosts();
             
             const q = searchInput.value.trim().toLowerCase();
             const start = startDateInput.value ? new Date(startDateInput.value).getTime() : 0;
@@ -252,7 +314,7 @@ createApp({
             startDateInput.value = '';
             endDateInput.value = '';
             isSearchActive.value = false;
-            filteredPosts.value = posts.value;
+            filteredPosts.value = getBasePosts();
             distributePosts();
         };
 
@@ -819,6 +881,11 @@ createApp({
                 } else {
                     favorites.value = { seikai: [], echo: [] };
                 }
+                // 如果当前在收藏 Tab，重新分发数据
+                if (currentTab.value === 'favorites') {
+                    filteredPosts.value = getBasePosts();
+                    distributePosts();
+                }
             } catch (e) {
                 console.warn("加载收藏数据失败，可能尚未初始化收藏文件", e);
                 favorites.value = { seikai: [], echo: [] };
@@ -847,6 +914,12 @@ createApp({
                 
                 favorites.value[user] = userFavs;
                 
+                // 如果在收藏 Tab 实时过滤移出
+                if (currentTab.value === 'favorites') {
+                    filteredPosts.value = getBasePosts();
+                    distributePosts();
+                }
+                
                 try {
                     const favsBlob = new Blob([JSON.stringify(favorites.value, null, 2)], { type: 'application/json' });
                     await client.put('dandawang/public/favorites.json', favsBlob);
@@ -859,6 +932,11 @@ createApp({
                         userFavs.splice(userFavs.indexOf(postId), 1);
                     }
                     favorites.value[user] = userFavs;
+                    
+                    if (currentTab.value === 'favorites') {
+                        filteredPosts.value = getBasePosts();
+                        distributePosts();
+                    }
                 }
             });
         };
@@ -994,7 +1072,7 @@ createApp({
                         URL.revokeObjectURL(objectUrl);
                         let width = img.width;
                         let height = img.height;
-                        const maxLongEdge = 800;
+                        const maxLongEdge = 2160;
                         if (width > maxLongEdge || height > maxLongEdge) {
                             if (width > height) {
                                 height = Math.round((height * maxLongEdge) / width);
@@ -1087,11 +1165,7 @@ createApp({
                         if (!post.comments) post.comments = [];
                         post.comments.push(commentObj);
                         
-                        const localPost = posts.value.find(p => p.id === post.id);
-                        if (localPost) {
-                            if (!localPost.comments) localPost.comments = [];
-                            localPost.comments.push(commentObj);
-                        }
+                        // 注意：post.comments 与 posts.value 内部指向同一个对象引用，不可二次 push，否则会发生重复渲染 Bug
                     }
                     
                     commentText.value = '';
@@ -1373,6 +1447,18 @@ createApp({
             clearCommentImage,
             addComment,
             getAvatarUrl,
+            currentTab,
+            setTab,
+            totalPhotosCount,
+            favoritedPostsCount,
+            allPhotos,
+            selectedPhoto,
+            openPhotoLightbox,
+            closePhotoLightbox,
+            selectedCommentImage,
+            openCommentImageLightbox,
+            closeCommentImageLightbox,
+            viewFullPostFromPhoto,
             handleVideoUploadPlaceholder: () => {
                 alert("视频上传功能正在开发中，敬请期待！");
             }
