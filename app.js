@@ -1653,9 +1653,12 @@ createApp({
         const handleVideoCoverError = async (e, post) => {
             if (e.target.dataset.fallbackState) return; 
 
+            const invalidSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="100%" height="100%" fill="%23f1f2f6"/><defs><pattern id="wm2" width="120" height="120" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)"><text x="10" y="60" font-size="16" fill="%23a4b0be" fill-opacity="0.5" font-weight="bold">资源失效</text></pattern></defs><rect width="100%" height="100%" fill="url(%23wm2)"/></svg>';
+            const transcodingSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="100%" height="100%" fill="%23fff5f5"/><defs><pattern id="wm" width="120" height="120" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)"><text x="10" y="60" font-size="16" fill="%23ff7675" fill-opacity="0.6" font-weight="bold">转码中...</text></pattern></defs><rect width="100%" height="100%" fill="url(%23wm)"/></svg>';
+
             if (!post.videoRaw) {
                 e.target.dataset.fallbackState = 'invalid';
-                e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23f1f2f6"/><text x="50%" y="45%" text-anchor="middle" font-size="16" fill="%23a4b0be">视频资源已失效</text><text x="50%" y="55%" text-anchor="middle" font-size="12" fill="%23a4b0be">可能格式不支持或已删除</text></svg>';
+                e.target.src = invalidSvg;
                 return;
             }
 
@@ -1668,10 +1671,10 @@ createApp({
 
             if (now - postTime < TRANSCODING_TIMEOUT) {
                 e.target.dataset.fallbackState = 'transcoding';
-                e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23fff5f5"/><text x="50%" y="45%" text-anchor="middle" font-size="16" fill="%23ff7675">努力转码中...</text><text x="50%" y="55%" text-anchor="middle" font-size="12" fill="%23ff7675">稍后即可播放</text></svg>';
+                e.target.src = transcodingSvg;
             } else {
                 e.target.dataset.fallbackState = 'invalid';
-                e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23f1f2f6"/><text x="50%" y="45%" text-anchor="middle" font-size="16" fill="%23a4b0be">视频资源已失效</text><text x="50%" y="55%" text-anchor="middle" font-size="12" fill="%23a4b0be">可能格式不支持或已删除</text></svg>';
+                e.target.src = invalidSvg;
             }
         };
 
