@@ -166,8 +166,8 @@ body {
 .hero-section {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4;
-  max-height: 520px;
+  /* 高度固定，随宽度增大头图向上顶出，保证下边缘不变 */
+  height: 520px;
   background-color: #ffd8a8;
   overflow: hidden;
 }
@@ -176,7 +176,8 @@ body {
   width: 100%;
   height: 100%;
   background-size: cover;
-  background-position: center;
+  /* 底部对齐：屏幕变宽时头图向上顶出，下边缘保持不变 */
+  background-position: bottom center;
   background-repeat: no-repeat;
 }
 
@@ -284,7 +285,7 @@ body {
 
 /* 月份筛选器 */
 .month-filter {
-  max-width: 1200px;
+  max-width: 2512px;
   margin: 0 auto 20px;
   padding: 0 16px;
   display: flex;
@@ -317,9 +318,9 @@ body {
   box-shadow: 0 4px 15px rgba(255, 159, 67, 0.3);
 }
 
-/* 瀑布流容器 */
+/* 瀑布流容器：最大宽度 = 6列*400px + 5个16px间距 + 32px内边距 = 2512px */
 .waterfall-container {
-  max-width: 1200px;
+  max-width: 2512px;
   margin: 0 auto;
   padding: 0 16px;
   display: flex;
@@ -329,6 +330,8 @@ body {
 
 .waterfall-col {
   flex: 1;
+  min-width: 0;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
   gap: 16px;

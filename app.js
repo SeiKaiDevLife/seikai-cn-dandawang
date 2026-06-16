@@ -1,4 +1,4 @@
-const { createApp, ref, onMounted, computed } = Vue;
+const { createApp, ref, onMounted, onBeforeUnmount, computed } = Vue;
 
 const CORRECT_HASH = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92";
 
@@ -183,9 +183,8 @@ createApp({
             }
         };
 
-        // 瀑布流
-        const leftCol = ref([]);
-        const rightCol = ref([]);
+        // 瀑布流列数据数组
+        const columns = ref([]);
         const selectedPost = ref(null);
         const showHomeDropdown = ref(false);
 
@@ -378,12 +377,19 @@ createApp({
         };
 
         let currentRenderId = 0;
+        let lastColCount = 0;
         const distributePosts = async () => {
             const renderId = ++currentRenderId;
-            let tempLeft = [];
-            let tempRight = [];
-            let leftHeight = 0;
-            let rightHeight = 0;
+            
+            // 计算当前视口适合的列数，限制最大容器宽度，保证单列宽度最高为 400px
+            // 6列 * 400px + 5个16px gap + 32px padding = 2512px
+            const winWidth = window.innerWidth;
+            const containerWidth = Math.min(winWidth, 2512);
+            const numCols = Math.max(2, Math.min(6, Math.ceil((containerWidth - 16) / 416)));
+            lastColCount = numCols;
+
+            let tempCols = Array.from({ length: numCols }, () => []);
+            let colHeights = Array(numCols).fill(0);
 
             for (const post of filteredPosts.value) {
                 if (!post.hash) post.hash = post.timestamp;
@@ -391,7 +397,7 @@ createApp({
                 let ratio = 1; // 默认 1:1
                 if (post.images && post.images.length > 0) {
                     try {
-                        // 在 distributePosts 中仅仅需要加载图片提取宽高比例，使用最小的 grid-cover (通常是 300px) 即可，大大节省网络流量
+                        // 在 distributePosts 中仅仅需要加载图片提取宽高比例，使用最小的 grid-cover 即可，节省网络流量
                         const imgUrl = getImageUrlWithHash(post.images[0], post.hash, 'grid-cover');
                         ratio = await new Promise((resolve) => {
                             const img = new Image();
@@ -409,19 +415,22 @@ createApp({
                 // 假设卡片高度：图片按比例占用高度 + 底部信息固定高度(100)
                 const estimatedHeight = ratio * 300 + 100;
 
-                // 判断哪列较矮，放入哪一列
-                if (leftHeight <= rightHeight) {
-                    tempLeft.push(post);
-                    leftHeight += estimatedHeight;
-                } else {
-                    tempRight.push(post);
-                    rightHeight += estimatedHeight;
+                // 寻找最矮的列放入
+                let minColIdx = 0;
+                let minColHeight = colHeights[0];
+                for (let i = 1; i < numCols; i++) {
+                    if (colHeights[i] < minColHeight) {
+                        minColHeight = colHeights[i];
+                        minColIdx = i;
+                    }
                 }
+                
+                tempCols[minColIdx].push(post);
+                colHeights[minColIdx] += estimatedHeight;
             }
             
             if (renderId === currentRenderId) {
-                leftCol.value = tempLeft;
-                rightCol.value = tempRight;
+                columns.value = tempCols;
             }
         };
 
@@ -1369,8 +1378,27 @@ createApp({
             });
         };
 
+        // 监听视口宽度变化，只有在列数发生变化时才触发 posts 的重新分配
+        let resizeTimeout = null;
+        const handleResize = () => {
+            if (resizeTimeout) clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const winWidth = window.innerWidth;
+                const containerWidth = Math.min(winWidth, 2512);
+                const numCols = Math.max(2, Math.min(6, Math.ceil((containerWidth - 16) / 416)));
+                if (numCols !== lastColCount) {
+                    distributePosts();
+                }
+            }, 100);
+        };
+
         onMounted(() => {
             checkLogin();
+            window.addEventListener('resize', handleResize);
+        });
+
+        onBeforeUnmount(() => {
+            window.removeEventListener('resize', handleResize);
         });
 
         return {
@@ -1382,8 +1410,7 @@ createApp({
             logout,
             meta,
             posts,
-            leftCol,
-            rightCol,
+            columns,
             filteredPosts,
             searchInput,
             startDateInput,
