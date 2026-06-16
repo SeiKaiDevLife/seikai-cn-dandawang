@@ -168,10 +168,10 @@ body {
   width: 100%;
   /*
    * 头图高度规则：
-   * - 宽度 < 1040px 时：固定 520px，图像向上溢出（下边缘不变）
-   * - 宽度 ≥ 1040px 时：高度跟随宽度的一半（2:1 比例），下边缘仍由 background-position: bottom 锚定
+   * - 宽度 < 1560px 时：固定 520px，图像向上溢出（从下往上1/4处不变）
+   * - 宽度 ≥ 1560px 时：高度跟随宽度的1/3（3:1 比例），锚点仍由 background-position 保持
    */
-  height: max(520px, 50vw);
+  height: max(520px, 33.33vw);
   background-color: #ffd8a8;
   overflow: hidden;
 }
@@ -180,8 +180,8 @@ body {
   width: 100%;
   height: 100%;
   background-size: cover;
-  /* 底部对齐：屏幕变宽时头图向上顶出，下边缘保持不变 */
-  background-position: bottom center;
+  /* 锚定图片从下往上 1/4 处（距顶 75%）：宽度扩大时该位置保持不变 */
+  background-position: center 75%;
   background-repeat: no-repeat;
 }
 
