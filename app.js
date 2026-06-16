@@ -1653,21 +1653,18 @@ createApp({
             }
 
             e.target.dataset.fallbackState = 'checking';
-            try {
-                const rawSnapshotUrl = getVideoSnapshotUrl(post.videoRaw, post.hash, 'normal-cover');
-                const res = await fetch(rawSnapshotUrl, { method: 'HEAD' });
-                
-                if (res.ok) {
-                    e.target.dataset.fallbackState = 'transcoding';
-                    e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23fff5f5"/><text x="50%" y="45%" text-anchor="middle" font-size="16" fill="%23ff7675">努力转码中...</text><text x="50%" y="55%" text-anchor="middle" font-size="12" fill="%23ff7675">稍后即可播放</text></svg>';
-                } else {
-                    e.target.dataset.fallbackState = 'invalid';
-                    e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23f1f2f6"/><text x="50%" y="45%" text-anchor="middle" font-size="16" fill="%23a4b0be">视频资源已失效</text><text x="50%" y="55%" text-anchor="middle" font-size="12" fill="%23a4b0be">可能格式不支持或已删除</text></svg>';
-                }
-            } catch (err) {
+            
+            const rawSnapshotUrl = getVideoSnapshotUrl(post.videoRaw, post.hash, 'normal-cover');
+            const img = new Image();
+            img.onload = () => {
+                e.target.dataset.fallbackState = 'transcoding';
+                e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23fff5f5"/><text x="50%" y="45%" text-anchor="middle" font-size="16" fill="%23ff7675">努力转码中...</text><text x="50%" y="55%" text-anchor="middle" font-size="12" fill="%23ff7675">稍后即可播放</text></svg>';
+            };
+            img.onerror = () => {
                 e.target.dataset.fallbackState = 'invalid';
                 e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23f1f2f6"/><text x="50%" y="45%" text-anchor="middle" font-size="16" fill="%23a4b0be">视频资源已失效</text><text x="50%" y="55%" text-anchor="middle" font-size="12" fill="%23a4b0be">可能格式不支持或已删除</text></svg>';
-            }
+            };
+            img.src = rawSnapshotUrl;
         };
 
         const handleVideoPlayerError = (e, post) => {
