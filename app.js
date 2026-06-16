@@ -600,18 +600,23 @@ createApp({
                 }
 
                 filesToProcess.forEach(file => {
+                    const tempId = Math.random();
                     const placeholderItem = {
+                        tempId,
                         url: PLACEHOLDER_SVG,
                         loading: true
                     };
                     publishImages.value.push(placeholderItem);
                     
                     compressImageToWebp(file).then(compressedUrl => {
-                        placeholderItem.url = compressedUrl;
-                        placeholderItem.loading = false;
+                        const targetItem = publishImages.value.find(img => img.tempId === tempId);
+                        if (targetItem) {
+                            targetItem.url = compressedUrl;
+                            targetItem.loading = false;
+                        }
                     }).catch(err => {
                         console.error("图片压缩失败", err);
-                        const idx = publishImages.value.indexOf(placeholderItem);
+                        const idx = publishImages.value.findIndex(img => img.tempId === tempId);
                         if (idx > -1) {
                             publishImages.value.splice(idx, 1);
                         }
