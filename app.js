@@ -240,21 +240,26 @@ createApp({
 
         const selectedPhoto = ref(null);
         const openPhotoLightbox = (photo) => {
+            console.log("Opening photo lightbox for:", photo);
             selectedPhoto.value = photo;
         };
         const closePhotoLightbox = () => {
+            console.log("Closing photo lightbox");
             selectedPhoto.value = null;
         };
 
         const selectedCommentImage = ref(null);
         const openCommentImageLightbox = (imgUrl, hash) => {
+            console.log("Opening comment image lightbox for:", imgUrl, hash);
             selectedCommentImage.value = { url: imgUrl, hash: hash };
         };
         const closeCommentImageLightbox = () => {
+            console.log("Closing comment image lightbox");
             selectedCommentImage.value = null;
         };
 
         const viewFullPostFromPhoto = (photo) => {
+            console.log("Viewing full post from photo:", photo);
             selectedPhoto.value = null;
             openPost(photo.post, photo.index);
         };

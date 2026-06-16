@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=62">
+    <link rel="stylesheet" href="index.css?v=63">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -291,7 +291,7 @@
                                         <div class="comment-text" v-if="comment.text">{{ comment.text }}</div>
                                         <!-- 图片评论 -->
                                         <div class="comment-attached-img-box" v-if="comment.image">
-                                            <img :src="ASSET_BASE + comment.image" class="comment-attached-img" alt="Comment Image" loading="lazy">
+                                            <img :src="getImageUrlWithHash(comment.image, selectedPost.hash || selectedPost.timestamp, 'detail')" class="comment-attached-img" alt="Comment Image" loading="lazy" @click="openCommentImageLightbox(comment.image, selectedPost.hash || selectedPost.timestamp)">
                                         </div>
                                     </div>
                                 </div>
@@ -535,11 +535,11 @@
                 <div class="photo-lightbox-card glass-card animate-fade-in">
                     <button class="photo-lightbox-close" @click="closePhotoLightbox">✕</button>
                     <div class="photo-lightbox-img-wrapper">
-                        <img :src="getImageUrlWithHash(selectedPhoto.url, selectedPhoto.post.hash || selectedPhoto.post.timestamp)" alt="Full Size Photo">
+                        <img :src="selectedPhoto ? getImageUrlWithHash(selectedPhoto.url, selectedPhoto.post.hash || selectedPhoto.post.timestamp) : ''" alt="Full Size Photo" @click="closePhotoLightbox" style="cursor: zoom-out;">
                     </div>
                     <div class="photo-lightbox-info">
-                        <h3 class="photo-lightbox-title">{{ selectedPhoto.post.title || '无标题' }}</h3>
-                        <p class="photo-lightbox-content" v-if="selectedPhoto.post.content">{{ selectedPhoto.post.content }}</p>
+                        <h3 class="photo-lightbox-title">{{ selectedPhoto ? (selectedPhoto.post.title || '无标题') : '' }}</h3>
+                        <p class="photo-lightbox-content" v-if="selectedPhoto && selectedPhoto.post.content">{{ selectedPhoto.post.content }}</p>
                         <button class="photo-lightbox-link" @click="viewFullPostFromPhoto(selectedPhoto)">
                             查看完整图文 
                             <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-left:4px;">
@@ -554,13 +554,13 @@
             <div class="comment-lightbox-overlay" v-if="selectedCommentImage" @click.self="closeCommentImageLightbox">
                 <button class="comment-lightbox-close" @click="closeCommentImageLightbox">✕</button>
                 <div class="comment-lightbox-img-wrapper">
-                    <img :src="getImageUrlWithHash(selectedCommentImage.url, selectedCommentImage.hash)" class="comment-lightbox-img" alt="Full Size Comment Image">
+                    <img :src="selectedCommentImage ? getImageUrlWithHash(selectedCommentImage.url, selectedCommentImage.hash) : ''" class="comment-lightbox-img" alt="Full Size Comment Image" @click="closeCommentImageLightbox">
                 </div>
             </div>
 
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=62"></script>
+    <script src="app.js?v=63"></script>
 </body>
 </html>
