@@ -2292,13 +2292,13 @@ body {
 }
 
 /* ==========================================
-   首页左上角更多按钮 & 下拉菜单样式
+   首页右上角更多按钮 & 下拉菜单样式
    ========================================== */
 
 .home-more-container {
   position: absolute;
   top: 20px;
-  left: 20px;
+  right: 20px;
   z-index: 150;
 }
 
@@ -2331,7 +2331,7 @@ body {
 .home-dropdown-menu {
   position: absolute;
   top: 50px;
-  left: 0;
+  right: 0;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -2340,7 +2340,8 @@ body {
   box-shadow: 0 10px 30px rgba(92, 77, 67, 0.15);
   min-width: 140px;
   overflow: hidden;
-  animation: slideUpPublish 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-origin: top right;
+  animation: slideDownMenu 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .home-dropdown-item {
@@ -2365,4 +2366,15 @@ body {
 .home-dropdown-item.logout-action:hover {
   background-color: #fde8e7;
   color: #c0392b;
+}
+
+@keyframes slideDownMenu {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
