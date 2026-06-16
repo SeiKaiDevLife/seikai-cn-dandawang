@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=79">
+    <link rel="stylesheet" href="index.css?v=80">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -62,7 +62,7 @@
                             <div class="home-dropdown-menu" v-if="showHomeDropdown" v-cloak>
                                 <!-- 用户信息卡片 -->
                                 <div class="dropdown-user-card">
-                                    <img :src="ASSET_BASE + getAvatarUrl(username)" class="dropdown-user-avatar" alt="Avatar"
+                                    <img :src="getAvatarUrl(username)" class="dropdown-user-avatar" alt="Avatar"
                                         onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\'><rect width=\'40\' height=\'40\' fill=\'%23ffd8a8\' rx=\'20\'/><text x=\'50%\' y=\'55%\' text-anchor=\'middle\' dominant-baseline=\'middle\' font-size=\'18\' fill=\'%23e09020\'>👤</text></svg>'">
                                     <div class="dropdown-user-info">
                                         <div class="dropdown-username">{{ username }}</div>
@@ -574,6 +574,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=79"></script>
+    <script src="app.js?v=80"></script>
 </body>
 </html>

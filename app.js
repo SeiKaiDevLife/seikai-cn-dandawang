@@ -1237,7 +1237,7 @@ createApp({
 
         const getAvatarUrl = (user) => {
             const cleanUser = (user || 'seikai').toLowerCase();
-            return `public/avatars/${cleanUser}.webp`;
+            return ASSET_BASE + `avatars/${cleanUser}.webp`;
         };
 
         const base64ToBlob = (base64Str) => {
