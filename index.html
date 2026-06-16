@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=51">
+    <link rel="stylesheet" href="index.css?v=52">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- Aliyun OSS SDK CDN (用于浏览器直传 OSS) -->
+    <script src="https://gosspublic.alicdn.com/aliyun-oss-sdk-6.18.0.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -384,9 +386,40 @@
                 </div>
             </div>
 
+            <!-- 二级密码验证弹窗 -->
+            <div class="sec-pwd-overlay" v-if="showSecPwdModal" @click.self="showSecPwdModal = false">
+                <div class="sec-pwd-container glass-card">
+                    <h3 class="sec-pwd-title">🔒 验证发布权限</h3>
+                    <p class="sec-pwd-subtitle">请输入二级密码以解密发布凭证</p>
+                    <form @submit.prevent="verifySecPassword" class="form">
+                        <input 
+                            type="password" 
+                            v-model="secPassword" 
+                            class="input sec-pwd-input" 
+                            placeholder="请输入二级发布密码..." 
+                            required
+                            autofocus
+                        />
+                        <div class="sec-pwd-actions">
+                            <button type="button" class="sec-pwd-btn cancel" @click="showSecPwdModal = false">取消</button>
+                            <button type="submit" class="sec-pwd-btn confirm">验证并发布</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 全屏同步中 Loading 遮罩 -->
+            <div class="sync-loading-overlay" v-if="isSyncingToOSS">
+                <div class="sync-loading-card">
+                    <div class="sync-spinner"></div>
+                    <h3 class="sync-loading-title">正在同步数据至 OSS...</h3>
+                    <p class="sync-loading-subtitle">请勿关闭网页，正在压缩图片并写入阿里云 OSS</p>
+                </div>
+            </div>
+
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=51"></script>
+    <script src="app.js?v=52"></script>
 </body>
 </html>

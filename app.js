@@ -2,6 +2,9 @@ const { createApp, ref, onMounted } = Vue;
 
 const CORRECT_HASH = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92";
 
+// 密文常量：使用 window.encryptOSSCredentials 生成后粘贴到这里
+const ENCRYPTED_CREDENTIALS = "";
+
 const PLACEHOLDER_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23fff5e6'/></svg>";
 
 const compressImageToWebp = (file) => {
@@ -48,6 +51,22 @@ createApp({
         const password = ref('');
         const loginError = ref(false);
         const scrollPosition = ref(0);
+        
+        const showSecPwdModal = ref(false);
+        const secPassword = ref('');
+        const isSyncingToOSS = ref(false);
+        const ossClient = ref(null);
+        
+        // 挂载辅助加密函数，方便生成密文
+        window.encryptOSSCredentials = (ak, sk, pwd) => {
+            const payload = JSON.stringify({ id: ak, secret: sk });
+            const encrypted = CryptoJS.AES.encrypt(payload, pwd).toString();
+            console.log("======== 加密成功 ========");
+            console.log("请复制下方密文并填入 app.js 中的 ENCRYPTED_CREDENTIALS 常量中：");
+            console.log(encrypted);
+            console.log("==========================");
+            return encrypted;
+        };
         
         const meta = ref({ totalPosts: 0, months: [] });
         const posts = ref([]);
@@ -653,56 +672,210 @@ createApp({
             return publishImages.value.length > 0 && publishImages.value.every(img => !img.loading);
         });
 
+        const verifySecPassword = () => {
+            if (!secPassword.value.trim()) {
+                alert("请输入二级密码！");
+                return;
+            }
+            
+            if (!ENCRYPTED_CREDENTIALS) {
+                alert("您的 OSS 密文常量尚未配置，请先按控制台指引运行 window.encryptOSSCredentials() 生成密文并填入 app.js。");
+                return;
+            }
+            
+            try {
+                const decryptedBytes = CryptoJS.AES.decrypt(ENCRYPTED_CREDENTIALS, secPassword.value.trim());
+                const decryptedText = decryptedBytes.toString(CryptoJS.enc.Utf8);
+                if (!decryptedText) {
+                    throw new Error("密码错误，解密内容为空");
+                }
+                
+                const credentials = JSON.parse(decryptedText);
+                if (!credentials.id || !credentials.secret) {
+                    throw new Error("解密后的凭证格式不正确");
+                }
+                
+                // 初始化 OSS 客户端
+                ossClient.value = new OSS({
+                    region: 'oss-cn-hangzhou',
+                    accessKeyId: credentials.id,
+                    accessKeySecret: credentials.secret,
+                    bucket: 'www-seikai',
+                    secure: true
+                });
+                
+                // 关闭输入模态框，执行上传
+                showSecPwdModal.value = false;
+                syncPostToOSS();
+            } catch (err) {
+                console.error("解密失败", err);
+                alert("二级密码验证失败，密码错误或凭证损坏！");
+            }
+        };
+
+        const base64ToBlob = (base64Str) => {
+            const parts = base64Str.split(';base64,');
+            const contentType = parts[0].split(':')[1];
+            const raw = window.atob(parts[1]);
+            const rawLength = raw.length;
+            const uInt8Array = new Uint8Array(rawLength);
+            for (let i = 0; i < rawLength; ++i) {
+                uInt8Array[i] = raw.charCodeAt(i);
+            }
+            return new Blob([uInt8Array], { type: contentType });
+        };
+
+        const syncPostToOSS = async () => {
+            if (!canSubmit.value || !ossClient.value) return;
+            
+            isSyncingToOSS.value = true;
+            
+            try {
+                const now = new Date();
+                const YYYY = now.getFullYear();
+                const MM = String(now.getMonth() + 1).padStart(2, '0');
+                const DD = String(now.getDate()).padStart(2, '0');
+                const monthId = `${YYYY}-${MM}`;
+                const dateStr = `${YYYY}-${MM}-${DD}`;
+                
+                const cleanTitle = publishTitle.value.trim().replace(/[\\\/:*?"<>|]/g, "_") || "untitled";
+                const folderPath = `images/${monthId}/${dateStr}_${cleanTitle}`;
+                
+                let finalImages = [];
+                let customGridData = null;
+                let customRows = null;
+                
+                if (publishMode.value === 'custom') {
+                    const sortedSlots = [...customGridSlots.value].sort((a, b) => {
+                        if (a.r !== b.r) return a.r - b.r;
+                        return a.c - b.c;
+                    });
+                    
+                    const uploadPromises = sortedSlots.map(async (slot, idx) => {
+                        if (!slot.image) return;
+                        
+                        const blob = base64ToBlob(slot.image);
+                        const relativePath = `${folderPath}/${idx + 1}.webp`;
+                        const ossKey = `dandawang/public/${relativePath}`;
+                        
+                        await ossClient.value.put(ossKey, blob);
+                        slot.image = relativePath; // 用 OSS 相对路径替换 base64
+                        return relativePath;
+                    });
+                    
+                    const uploadedPaths = await Promise.all(uploadPromises);
+                    finalImages = uploadedPaths.filter(p => p !== undefined);
+                    customGridData = sortedSlots;
+                    customRows = customGridRows.value;
+                } else {
+                    const uploadPromises = publishImages.value.map(async (img, idx) => {
+                        const blob = base64ToBlob(img.url);
+                        const relativePath = `${folderPath}/${idx + 1}.webp`;
+                        const ossKey = `dandawang/public/${relativePath}`;
+                        
+                        await ossClient.value.put(ossKey, blob);
+                        return relativePath;
+                    });
+                    
+                    finalImages = await Promise.all(uploadPromises);
+                }
+                
+                // 1. 获取最新的 meta.json
+                let currentMeta = { totalPosts: 0, months: [] };
+                try {
+                    const metaRes = await fetch(ASSET_BASE + 'meta.json?t=' + Date.now());
+                    if (metaRes.ok) {
+                        currentMeta = await metaRes.json();
+                    }
+                } catch (e) {
+                    console.warn("获取 meta.json 失败，使用初始值", e);
+                }
+                
+                // 2. 查找是否有当前月份
+                let monthMeta = currentMeta.months.find(m => m.id === monthId);
+                let monthPosts = [];
+                
+                if (monthMeta) {
+                    // 获取该月份对应的 JSON 文章列表
+                    try {
+                        const postsRes = await fetch(ASSET_BASE + monthMeta.jsonPath + '?t=' + Date.now());
+                        if (postsRes.ok) {
+                            monthPosts = await postsRes.json();
+                        }
+                    } catch (e) {
+                        console.warn("获取本月文章列表失败，使用空列表", e);
+                    }
+                } else {
+                    // 如果是新的月份，创建月份索引信息并排在最前面
+                    monthMeta = {
+                        id: monthId,
+                        postCount: 0,
+                        jsonPath: `posts/${monthId}.json`
+                    };
+                    currentMeta.months.unshift(monthMeta);
+                    currentMeta.months.sort((a, b) => b.id.localeCompare(a.id));
+                }
+                
+                // 3. 构建全新笔记对象
+                const newPost = {
+                    id: "post_" + Date.now(),
+                    timestamp: Date.now(),
+                    layout: publishMode.value,
+                    type: publishMode.value, // 兼容老的字段
+                    title: publishTitle.value.trim(),
+                    content: publishContent.value.trim(),
+                    images: finalImages,
+                    customGridData,
+                    customRows,
+                    layout_config: customGridData // 兼容老的字段
+                };
+                
+                // 4. 追加到本月列表开头
+                monthPosts.unshift(newPost);
+                
+                // 5. 上传本月 posts JSON
+                const monthJsonBlob = new Blob([JSON.stringify(monthPosts, null, 2)], { type: 'application/json' });
+                await ossClient.value.put(`dandawang/public/${monthMeta.jsonPath}`, monthJsonBlob);
+                
+                // 6. 更新 meta.json 数据并上传
+                monthMeta.postCount = monthPosts.length;
+                currentMeta.totalPosts = (currentMeta.totalPosts || 0) + 1;
+                
+                const metaBlob = new Blob([JSON.stringify(currentMeta, null, 2)], { type: 'application/json' });
+                await ossClient.value.put('dandawang/public/meta.json', metaBlob);
+                
+                // 7. 同步本地 Vue 数据
+                meta.value = currentMeta;
+                
+                // 自动刷新视图列表
+                if (currentMonthId.value === 'all') {
+                    await loadAllMonths();
+                } else if (currentMonthId.value === monthId) {
+                    await loadMonth(monthMeta);
+                    filteredPosts.value = posts.value;
+                    distributePosts();
+                } else {
+                    await loadAllMonths();
+                }
+                
+                alert("发布并同步成功！");
+                closePublish();
+            } catch (err) {
+                console.error("同步到 OSS 失败", err);
+                alert("同步数据到 OSS 失败，请检查密钥权限、CORS设置或网络！");
+            } finally {
+                isSyncingToOSS.value = false;
+            }
+        };
+
         const submitPost = () => {
             if (!canSubmit.value) return;
-
-            let finalImages = [];
-            let postLayout = publishMode.value;
-            let customGridData = null;
-            let customRows = null;
-
-            if (publishMode.value === 'custom') {
-                // sort slots so images array is ordered left-to-right, top-to-bottom based on (r, c)
-                const sortedSlots = [...customGridSlots.value].sort((a, b) => {
-                    if (a.r !== b.r) return a.r - b.r;
-                    return a.c - b.c;
-                });
-                finalImages = sortedSlots.map(s => s.image);
-                customGridData = sortedSlots;
-                customRows = customGridRows.value;
-            } else {
-                finalImages = publishImages.value.map(img => img.url);
-            }
-
-            const newPost = {
-                id: "temp_" + Date.now(),
-                title: publishTitle.value.trim(),
-                content: publishContent.value.trim(),
-                timestamp: Date.now(),
-                images: finalImages,
-                hash: "temp_" + Date.now(),
-                layout: postLayout,
-                customGridData,
-                customRows
-            };
-
-            // 添加到所有推文列表头部
-            posts.value.unshift(newPost);
             
-            // 增加发布数量
-            if (meta.value) {
-                meta.value.totalPosts = (meta.value.totalPosts || 0) + 1;
-            }
-            
-            // 如果在搜索模式下，或者直接刷新列表
-            if (isSearchActive.value) {
-                applySearch();
+            if (!ossClient.value) {
+                showSecPwdModal.value = true;
             } else {
-                filteredPosts.value = posts.value;
-                distributePosts();
+                syncPostToOSS();
             }
-
-            closePublish();
         };
 
         onMounted(() => {
@@ -779,6 +952,10 @@ createApp({
             onNormalTouchEnd,
             canSubmit,
             submitPost,
+            showSecPwdModal,
+            secPassword,
+            isSyncingToOSS,
+            verifySecPassword,
             handleVideoUploadPlaceholder: () => {
                 alert("视频上传功能正在开发中，敬请期待！");
             }
