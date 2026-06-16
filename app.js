@@ -238,6 +238,29 @@ createApp({
             return list;
         });
 
+        // 当前用户的统计数据：图文数、图片数、评论数
+        const userStats = computed(() => {
+            const user = (username.value || 'seikai').toLowerCase();
+            let postCount = 0;
+            let imageCount = 0;
+            let commentCount = 0;
+            posts.value.forEach(p => {
+                if ((p.publisher || 'seikai').toLowerCase() === user) {
+                    postCount++;
+                    imageCount += p.images ? p.images.length : 0;
+                }
+                // 统计该用户发表的评论
+                if (p.comments) {
+                    p.comments.forEach(c => {
+                        if ((c.commenter || '').toLowerCase() === user) {
+                            commentCount++;
+                        }
+                    });
+                }
+            });
+            return { postCount, imageCount, commentCount };
+        });
+
         const selectedPhoto = ref(null);
         const openPhotoLightbox = (photo) => {
             console.log("Opening photo lightbox for:", photo);
@@ -1424,6 +1447,8 @@ createApp({
             formatDate,
             ASSET_BASE,
             getImageUrlWithHash,
+            userStats,
+            getAvatarUrl,
             openPost,
             closePost,
             selectedPost,

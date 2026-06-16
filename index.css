@@ -2340,16 +2340,98 @@ body {
   position: absolute;
   top: 50px;
   right: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(92, 77, 67, 0.15);
-  min-width: 140px;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(92, 77, 67, 0.18);
+  min-width: 220px;
   overflow: hidden;
   transform-origin: top right;
   animation: slideDownMenu 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* 用户信息卡片 */
+.dropdown-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 16px 12px;
+}
+
+.dropdown-user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffe8cc;
+  flex-shrink: 0;
+}
+
+.dropdown-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dropdown-username {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary-text);
+  text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-user-role {
+  font-size: 0.78rem;
+  color: #b0a090;
+}
+
+/* 统计数据行 */
+.dropdown-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 8px 12px 12px;
+  gap: 4px;
+}
+
+.dropdown-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.dropdown-stat-num {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--accent-orange);
+  line-height: 1;
+}
+
+.dropdown-stat-label {
+  font-size: 0.72rem;
+  color: #b0a090;
+}
+
+.dropdown-stat-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(0, 0, 0, 0.07);
+  flex-shrink: 0;
+}
+
+/* 分割线 */
+.dropdown-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.07);
+  margin: 0 12px;
 }
 
 .home-dropdown-item {

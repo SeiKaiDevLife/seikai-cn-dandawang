@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=78">
+    <link rel="stylesheet" href="index.css?v=79">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -60,6 +60,35 @@
                         <!-- 下拉菜单 -->
                         <transition name="fade">
                             <div class="home-dropdown-menu" v-if="showHomeDropdown" v-cloak>
+                                <!-- 用户信息卡片 -->
+                                <div class="dropdown-user-card">
+                                    <img :src="ASSET_BASE + getAvatarUrl(username)" class="dropdown-user-avatar" alt="Avatar"
+                                        onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\'><rect width=\'40\' height=\'40\' fill=\'%23ffd8a8\' rx=\'20\'/><text x=\'50%\' y=\'55%\' text-anchor=\'middle\' dominant-baseline=\'middle\' font-size=\'18\' fill=\'%23e09020\'>👤</text></svg>'">
+                                    <div class="dropdown-user-info">
+                                        <div class="dropdown-username">{{ username }}</div>
+                                        <div class="dropdown-user-role">氮氮的铲屎官</div>
+                                    </div>
+                                </div>
+                                <!-- 统计数据 -->
+                                <div class="dropdown-stats">
+                                    <div class="dropdown-stat-item">
+                                        <span class="dropdown-stat-num">{{ userStats.postCount }}</span>
+                                        <span class="dropdown-stat-label">图文</span>
+                                    </div>
+                                    <div class="dropdown-stat-divider"></div>
+                                    <div class="dropdown-stat-item">
+                                        <span class="dropdown-stat-num">{{ userStats.imageCount }}</span>
+                                        <span class="dropdown-stat-label">照片</span>
+                                    </div>
+                                    <div class="dropdown-stat-divider"></div>
+                                    <div class="dropdown-stat-item">
+                                        <span class="dropdown-stat-num">{{ userStats.commentCount }}</span>
+                                        <span class="dropdown-stat-label">评论</span>
+                                    </div>
+                                </div>
+                                <!-- 分割线 -->
+                                <div class="dropdown-divider"></div>
+                                <!-- 退出登录 -->
                                 <div class="home-dropdown-item logout-action" @click="logout">
                                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
                                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -545,6 +574,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=78"></script>
+    <script src="app.js?v=79"></script>
 </body>
 </html>
