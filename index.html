@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=89">
+    <link rel="stylesheet" href="index.css?v=90">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -516,7 +516,7 @@
                                 </svg>
                                 <span>添加视频</span>
                                 <span class="upload-limit-text">最大 100MB，限 60 秒内</span>
-                                <input type="file" accept="video/mp4,video/quicktime" ref="videoFileInputRef" style="display:none;" @change="handleVideoSelect">
+                                <input type="file" accept="video/*,video/mp4,video/quicktime,video/x-m4v" ref="videoFileInputRef" style="display:none;" @change="handleVideoSelect">
                             </label>
                         </div>
 
@@ -624,6 +624,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=89"></script>
+    <script src="app.js?v=90"></script>
 </body>
 </html>
