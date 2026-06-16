@@ -7,7 +7,13 @@ const ENCRYPTED_CREDENTIALS = "U2FsdGVkX1/i31BRGbRy36MiahjHqdC4XyFWIhGFH9yWsfqzZ
 
 // 挂载辅助加密函数，方便生成密文（全局作用域）
 window.encryptOSSCredentials = (ak, sk, pwd) => {
-    const payload = JSON.stringify({ id: ak, secret: sk });
+    const cleanAk = ak.trim();
+    const cleanSk = sk.trim();
+    console.log("正在为您处理密钥，已自动裁剪首尾空格...");
+    console.log("AccessKeyId 长度:", cleanAk.length, "首尾预览:", cleanAk.substring(0, 4) + "..." + cleanAk.substring(cleanAk.length - 4));
+    console.log("AccessKeySecret 长度:", cleanSk.length, "首尾预览:", cleanSk.substring(0, 4) + "..." + cleanSk.substring(cleanSk.length - 4));
+    
+    const payload = JSON.stringify({ id: cleanAk, secret: cleanSk });
     const encrypted = CryptoJS.AES.encrypt(payload, pwd).toString();
     console.log("======== 加密成功 ========");
     console.log("请复制下方密文并填入 app.js 中的 ENCRYPTED_CREDENTIALS 常量中：");
@@ -711,11 +717,19 @@ createApp({
                     throw new Error("解密后的凭证格式不正确");
                 }
                 
+                // 自动去除可能存在的首尾空格/换行
+                const cleanId = credentials.id.trim();
+                const cleanSecret = credentials.secret.trim();
+                
+                console.log("解密凭证成功！");
+                console.log("AccessKeyId 长度:", cleanId.length, "首尾预览:", cleanId.substring(0, 4) + "..." + cleanId.substring(cleanId.length - 4));
+                console.log("AccessKeySecret 长度:", cleanSecret.length, "首尾预览:", cleanSecret.substring(0, 4) + "..." + cleanSecret.substring(cleanSecret.length - 4));
+
                 // 初始化 OSS 客户端
                 ossClient.value = new OSS({
                     region: 'oss-cn-hangzhou',
-                    accessKeyId: credentials.id,
-                    accessKeySecret: credentials.secret,
+                    accessKeyId: cleanId,
+                    accessKeySecret: cleanSecret,
                     bucket: 'www-seikai',
                     secure: true
                 });
