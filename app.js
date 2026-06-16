@@ -161,7 +161,22 @@ createApp({
             const end = endDateInput.value ? new Date(endDateInput.value + 'T23:59:59.999').getTime() : Infinity;
 
             res = res.filter(p => {
-                const matchKeyword = q ? ((p.title && p.title.toLowerCase().includes(q)) || (p.content && p.content.toLowerCase().includes(q))) : true;
+                let matchKeyword = true;
+                if (q) {
+                    if (q.includes('+')) {
+                        // AND search: all keywords must appear
+                        const keywords = q.split('+').map(k => k.trim()).filter(k => k);
+                        matchKeyword = keywords.every(k => {
+                            return (p.title && p.title.toLowerCase().includes(k)) || (p.content && p.content.toLowerCase().includes(k));
+                        });
+                    } else {
+                        // OR search: at least one keyword must appear (single keyword falls here as well)
+                        const keywords = q.split(/\s+/).map(k => k.trim()).filter(k => k);
+                        matchKeyword = keywords.some(k => {
+                            return (p.title && p.title.toLowerCase().includes(k)) || (p.content && p.content.toLowerCase().includes(k));
+                        });
+                    }
+                }
                 const matchTime = p.timestamp >= start && p.timestamp <= end;
                 return matchKeyword && matchTime;
             });
@@ -169,7 +184,15 @@ createApp({
             filteredPosts.value = res;
             
             let status = [];
-            if (q) status.push('关键词"' + q + '"');
+            if (q) {
+                if (q.includes('+')) {
+                    const keywords = q.split('+').map(k => k.trim()).filter(k => k);
+                    status.push('包含所有: "' + keywords.join(' + ') + '"');
+                } else {
+                    const keywords = q.split(/\s+/).map(k => k.trim()).filter(k => k);
+                    status.push('包含任意: "' + keywords.join(' 或 ') + '"');
+                }
+            }
             if (startDateInput.value || endDateInput.value) {
                 status.push('日期 ' + (startDateInput.value || '最早') + ' 至 ' + (endDateInput.value || '最新'));
             }
