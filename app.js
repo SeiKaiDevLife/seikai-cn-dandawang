@@ -673,7 +673,7 @@ createApp({
         });
 
         const verifySecPassword = () => {
-            if (!secPassword.value.trim()) {
+            if (!secPassword.value) {
                 alert("请输入二级密码！");
                 return;
             }
@@ -684,7 +684,7 @@ createApp({
             }
             
             try {
-                const decryptedBytes = CryptoJS.AES.decrypt(ENCRYPTED_CREDENTIALS, secPassword.value.trim());
+                const decryptedBytes = CryptoJS.AES.decrypt(ENCRYPTED_CREDENTIALS, secPassword.value);
                 const decryptedText = decryptedBytes.toString(CryptoJS.enc.Utf8);
                 if (!decryptedText) {
                     throw new Error("密码错误，解密内容为空");
@@ -708,8 +708,10 @@ createApp({
                 showSecPwdModal.value = false;
                 syncPostToOSS();
             } catch (err) {
-                console.error("解密失败", err);
-                alert("二级密码验证失败，密码错误或凭证损坏！");
+                console.error("解密或解析 JSON 失败，详细错误：", err);
+                console.warn("当前尝试解密的密文为:", ENCRYPTED_CREDENTIALS);
+                console.warn("您当前输入的密码长度为:", secPassword.value ? secPassword.value.length : 0);
+                alert("二级密码验证失败，密码错误或凭证损坏！\n请查看控制台 Console 获取详细错误日志。");
             }
         };
 
