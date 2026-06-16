@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=80">
+    <link rel="stylesheet" href="index.css?v=81">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -108,7 +108,7 @@
                 <div class="profile-section">
                     <div class="avatar-container">
                         <!-- 头像增加随机数后缀防止缓存 -->
-                        <img :src="ASSET_BASE + 'avatar.webp?v=' + Date.now()" class="profile-avatar" alt="Avatar" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'%23ddd\'/></svg>'">
+                        <img :src="ASSET_BASE + 'avatar.webp?x-oss-process=image/resize,w_300'" class="profile-avatar" alt="Avatar" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'%23ddd\'/></svg>'">
                     </div>
                     <h1 class="profile-name">氮氮</h1>
                     <p class="profile-bio">SeiKai & Echo 的宝贝米努特 🐾<br>每天都在吃和睡之间疯狂试探</p>
@@ -548,7 +548,7 @@
                 <div class="photo-lightbox-card glass-card animate-fade-in">
                     <button class="photo-lightbox-close" @click="closePhotoLightbox">✕</button>
                     <div class="photo-lightbox-img-wrapper">
-                        <img :src="selectedPhoto ? getImageUrlWithHash(selectedPhoto.url, selectedPhoto.post.hash || selectedPhoto.post.timestamp) : ''" alt="Full Size Photo" @click="closePhotoLightbox" style="cursor: zoom-out;">
+                        <img :src="selectedPhoto ? getImageUrlWithHash(selectedPhoto.url, selectedPhoto.post.hash || selectedPhoto.post.timestamp, 'detail') : ''" alt="Full Size Photo" @click="closePhotoLightbox" style="cursor: zoom-out;">
                     </div>
                     <div class="photo-lightbox-info">
                         <h3 class="photo-lightbox-title">{{ selectedPhoto ? (selectedPhoto.post.title || '无标题') : '' }}</h3>
@@ -567,13 +567,13 @@
             <div class="comment-lightbox-overlay" v-if="selectedCommentImage" @click.self="closeCommentImageLightbox">
                 <button class="comment-lightbox-close" @click="closeCommentImageLightbox">✕</button>
                 <div class="comment-lightbox-img-wrapper">
-                    <img :src="selectedCommentImage ? getImageUrlWithHash(selectedCommentImage.url, selectedCommentImage.hash) : ''" class="comment-lightbox-img" alt="Full Size Comment Image" @click="closeCommentImageLightbox">
+                    <img :src="selectedCommentImage ? getImageUrlWithHash(selectedCommentImage.url, selectedCommentImage.hash, 'detail') : ''" class="comment-lightbox-img" alt="Full Size Comment Image" @click="closeCommentImageLightbox">
                 </div>
             </div>
 
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=80"></script>
+    <script src="app.js?v=81"></script>
 </body>
 </html>

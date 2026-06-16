@@ -1237,7 +1237,8 @@ createApp({
 
         const getAvatarUrl = (user) => {
             const cleanUser = (user || 'seikai').toLowerCase();
-            return ASSET_BASE + `avatars/${cleanUser}.webp`;
+            // 头像 CSS 尺寸约 32-50px，DPR 2 → 最大 100px 物理像素，取 bucket=300 保证质量与缓存命中
+            return `${ASSET_BASE}avatars/${cleanUser}.webp?x-oss-process=image/resize,w_300`;
         };
 
         const base64ToBlob = (base64Str) => {
