@@ -187,6 +187,7 @@ createApp({
         const leftCol = ref([]);
         const rightCol = ref([]);
         const selectedPost = ref(null);
+        const showHomeDropdown = ref(false);
 
         // 搜索功能替换为内嵌式
         const searchInput = ref('');
@@ -1464,6 +1465,7 @@ createApp({
             openCommentImageLightbox,
             closeCommentImageLightbox,
             viewFullPostFromPhoto,
+            showHomeDropdown,
             handleVideoUploadPlaceholder: () => {
                 alert("视频上传功能正在开发中，敬请期待！");
             }

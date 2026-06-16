@@ -175,9 +175,10 @@ body {
 .hero-image-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #ffc078 0%, #ff922b 100%);
+  background-image: url('public/dandan_hero.jpg?v=1');
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
 }
 
 .hero-overlay {
@@ -1819,7 +1820,7 @@ body {
 
 /* 评论模块样式 */
 .detail-comments-section {
-  margin-top: 24px;
+  margin-top: 0;
   padding: 20px 16px 0;
   border-top: 1px solid #f1f3f5;
 }
@@ -2288,4 +2289,80 @@ body {
   border-radius: 8px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   cursor: zoom-out;
+}
+
+/* ==========================================
+   首页左上角更多按钮 & 下拉菜单样式
+   ========================================== */
+
+.home-more-container {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 150;
+}
+
+.home-more-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.home-more-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
+}
+
+.home-more-btn:active {
+  transform: scale(0.95);
+}
+
+.home-dropdown-menu {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(92, 77, 67, 0.15);
+  min-width: 140px;
+  overflow: hidden;
+  animation: slideUpPublish 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.home-dropdown-item {
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  color: var(--primary-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.home-dropdown-item:hover {
+  background-color: rgba(255, 159, 67, 0.08);
+  color: var(--accent-orange);
+}
+
+.home-dropdown-item.logout-action {
+  color: #e74c3c;
+}
+
+.home-dropdown-item.logout-action:hover {
+  background-color: #fde8e7;
+  color: #c0392b;
 }
