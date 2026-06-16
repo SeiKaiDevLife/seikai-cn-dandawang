@@ -128,9 +128,14 @@ createApp({
         const loadMonth = async (m) => {
             currentMonthId.value = m.id;
             try {
-                const postRes = await fetch(ASSET_BASE + m.jsonPath);
+                const postRes = await fetch(ASSET_BASE + m.jsonPath + '?t=' + Date.now());
                 if (postRes.ok) {
-                    posts.value = await postRes.json();
+                    const rawPosts = await postRes.json();
+                    posts.value = rawPosts.map(post => ({
+                        ...post,
+                        publisher: post.publisher || 'seikai',
+                        comments: post.comments || []
+                    }));
                 }
             } catch (e) {
                 console.error("加载月份失败", e);
@@ -141,12 +146,16 @@ createApp({
             currentMonthId.value = 'all';
             let allPosts = [];
             try {
-                const reqs = meta.value.months.map(m => fetch(ASSET_BASE + m.jsonPath).then(r => r.json()));
+                const reqs = meta.value.months.map(m => fetch(ASSET_BASE + m.jsonPath + '?t=' + Date.now()).then(r => r.json()));
                 const results = await Promise.all(reqs);
                 results.forEach(res => {
                     allPosts = allPosts.concat(res);
                 });
-                posts.value = allPosts.sort((a, b) => b.timestamp - a.timestamp);
+                posts.value = allPosts.map(post => ({
+                    ...post,
+                    publisher: post.publisher || 'seikai',
+                    comments: post.comments || []
+                })).sort((a, b) => b.timestamp - a.timestamp);
                 
                 if (isSearchActive.value) {
                     applySearch();
@@ -161,13 +170,14 @@ createApp({
 
         const loadData = async () => {
             try {
-                const metaRes = await fetch(ASSET_BASE + 'meta.json');
+                const metaRes = await fetch(ASSET_BASE + 'meta.json?t=' + Date.now());
                 if (metaRes.ok) {
                     meta.value = await metaRes.json();
                     if (meta.value.months.length > 0) {
                         await loadAllMonths();
                     }
                 }
+                await loadFavorites();
             } catch (e) {
                 console.error("加载失败", e);
             }
@@ -734,6 +744,16 @@ createApp({
             return publishImages.value.length > 0 && publishImages.value.every(img => !img.loading);
         });
 
+        let pendingAction = null;
+        const executeWithOSS = (actionFn) => {
+            if (ossClient.value) {
+                actionFn(ossClient.value);
+            } else {
+                pendingAction = actionFn;
+                showSecPwdModal.value = true;
+            }
+        };
+
         const verifySecPassword = () => {
             if (!secPassword.value) {
                 alert("请输入二级密码！");
@@ -774,15 +794,328 @@ createApp({
                     secure: true
                 });
                 
-                // 关闭输入模态框，执行上传
+                // 关闭输入模态框
                 showSecPwdModal.value = false;
-                syncPostToOSS();
+                
+                // 执行等待的操作
+                if (pendingAction) {
+                    const action = pendingAction;
+                    pendingAction = null;
+                    action(ossClient.value);
+                }
             } catch (err) {
                 console.error("解密或解析 JSON 失败，详细错误：", err);
-                console.warn("当前尝试解密的密文为:", ENCRYPTED_CREDENTIALS);
-                console.warn("您当前输入的密码长度为:", secPassword.value ? secPassword.value.length : 0);
-                alert("二级密码验证失败，密码错误或凭证损坏！\n请查看控制台 Console 获取详细错误日志。");
+                alert("二级密码验证失败，密码错误或凭证损坏！");
             }
+        };
+
+        const favorites = ref({ seikai: [], echo: [] });
+        
+        const loadFavorites = async () => {
+            try {
+                const res = await fetch(ASSET_BASE + 'favorites.json?t=' + Date.now());
+                if (res.ok) {
+                    favorites.value = await res.json();
+                } else {
+                    favorites.value = { seikai: [], echo: [] };
+                }
+            } catch (e) {
+                console.warn("加载收藏数据失败，可能尚未初始化收藏文件", e);
+                favorites.value = { seikai: [], echo: [] };
+            }
+        };
+
+        const isFavorited = (postId) => {
+            const user = username.value || 'seikai';
+            const userFavs = favorites.value[user] || [];
+            return userFavs.includes(postId);
+        };
+
+        const toggleFavorite = (post) => {
+            if (!post) return;
+            const postId = post.id;
+            const user = username.value || 'seikai';
+            
+            executeWithOSS(async (client) => {
+                let userFavs = [...(favorites.value[user] || [])];
+                const index = userFavs.indexOf(postId);
+                if (index > -1) {
+                    userFavs.splice(index, 1);
+                } else {
+                    userFavs.push(postId);
+                }
+                
+                favorites.value[user] = userFavs;
+                
+                try {
+                    const favsBlob = new Blob([JSON.stringify(favorites.value, null, 2)], { type: 'application/json' });
+                    await client.put('dandawang/public/favorites.json', favsBlob);
+                } catch (e) {
+                    console.error("同步收藏到 OSS 失败", e);
+                    alert("同步收藏状态失败，请检查网络权限！");
+                    if (index > -1) {
+                        userFavs.push(postId);
+                    } else {
+                        userFavs.splice(userFavs.indexOf(postId), 1);
+                    }
+                    favorites.value[user] = userFavs;
+                }
+            });
+        };
+
+        const showDeleteDropdown = ref(false);
+        const deletePost = (post) => {
+            if (!post) return;
+            if (!confirm("确认删除此图文吗？此操作将永久删除该图文及其所有云端图片与评论，且无法恢复！")) return;
+            
+            showDeleteDropdown.value = false;
+            
+            executeWithOSS(async (client) => {
+                isSyncingToOSS.value = true;
+                try {
+                    const postId = post.id;
+                    
+                    // 1. 删除帖子图片
+                    if (post.images && post.images.length > 0) {
+                        for (const imgPath of post.images) {
+                            if (!imgPath.startsWith('data:')) {
+                                try {
+                                    await client.delete(`dandawang/public/${imgPath}`);
+                                } catch (e) {
+                                    console.warn(`删除图片失败: ${imgPath}`, e);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 2. 删除评论里的图片
+                    if (post.comments && post.comments.length > 0) {
+                        for (const comment of post.comments) {
+                            if (comment.image && !comment.image.startsWith('data:')) {
+                                try {
+                                    await client.delete(`dandawang/public/${comment.image}`);
+                                } catch (e) {
+                                    console.warn(`删除评论图片失败: ${comment.image}`, e);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 3. 获取并更新 meta.json 及月度 JSON
+                    let currentMeta = { totalPosts: 0, months: [] };
+                    const metaRes = await fetch(ASSET_BASE + 'meta.json?t=' + Date.now());
+                    if (metaRes.ok) {
+                        currentMeta = await metaRes.json();
+                    }
+                    
+                    const postDate = new Date(post.timestamp);
+                    const YYYY = postDate.getFullYear();
+                    const MM = String(postDate.getMonth() + 1).padStart(2, '0');
+                    const monthId = `${YYYY}-${MM}`;
+                    
+                    let monthMeta = currentMeta.months.find(m => m.id === monthId);
+                    if (monthMeta) {
+                        let monthPosts = [];
+                        const postsRes = await fetch(ASSET_BASE + monthMeta.jsonPath + '?t=' + Date.now());
+                        if (postsRes.ok) {
+                            monthPosts = await postsRes.json();
+                        }
+                        
+                        const originalLength = monthPosts.length;
+                        monthPosts = monthPosts.filter(p => p.id !== postId);
+                        
+                        if (monthPosts.length !== originalLength) {
+                            if (monthPosts.length > 0) {
+                                const monthJsonBlob = new Blob([JSON.stringify(monthPosts, null, 2)], { type: 'application/json' });
+                                await client.put(`dandawang/public/${monthMeta.jsonPath}`, monthJsonBlob);
+                                monthMeta.postCount = monthPosts.length;
+                            } else {
+                                try {
+                                    await client.delete(`dandawang/public/${monthMeta.jsonPath}`);
+                                } catch (e) {
+                                    console.warn(`删除空月份 JSON 失败: ${monthMeta.jsonPath}`, e);
+                                }
+                                currentMeta.months = currentMeta.months.filter(m => m.id !== monthId);
+                            }
+                            
+                            currentMeta.totalPosts = Math.max(0, (currentMeta.totalPosts || 0) - 1);
+                            const metaBlob = new Blob([JSON.stringify(currentMeta, null, 2)], { type: 'application/json' });
+                            await client.put('dandawang/public/meta.json', metaBlob);
+                        }
+                    }
+                    
+                    // 同步本地数据
+                    posts.value = posts.value.filter(p => p.id !== postId);
+                    filteredPosts.value = filteredPosts.value.filter(p => p.id !== postId);
+                    meta.value = currentMeta;
+                    
+                    distributePosts();
+                    selectedPost.value = null;
+                    alert("删除成功！");
+                } catch (err) {
+                    console.error("删除失败", err);
+                    alert("删除失败，请检查网络或密钥权限！");
+                } finally {
+                    isSyncingToOSS.value = false;
+                }
+            });
+        };
+
+        const commentText = ref('');
+        const commentsImageFile = ref(null);
+        const commentsImagePreview = ref(null);
+        const isSubmittingComment = ref(false);
+
+        const handleCommentImageSelect = (event) => {
+            const file = event.target.files ? event.target.files[0] : null;
+            if (!file) return;
+            
+            commentsImageFile.value = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                commentsImagePreview.value = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        
+        const clearCommentImage = () => {
+            commentsImageFile.value = null;
+            commentsImagePreview.value = null;
+            const fileInput = document.getElementById('comment-file-input');
+            if (fileInput) fileInput.value = '';
+        };
+
+        const compressCommentImage = (file) => {
+            return new Promise((resolve, reject) => {
+                const objectUrl = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    try {
+                        URL.revokeObjectURL(objectUrl);
+                        let width = img.width;
+                        let height = img.height;
+                        const maxLongEdge = 800;
+                        if (width > maxLongEdge || height > maxLongEdge) {
+                            if (width > height) {
+                                height = Math.round((height * maxLongEdge) / width);
+                                width = maxLongEdge;
+                            } else {
+                                width = Math.round((width * maxLongEdge) / height);
+                                height = maxLongEdge;
+                            }
+                        }
+                        
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        const webpDataUrl = canvas.toDataURL('image/webp', 0.8);
+                        resolve(webpDataUrl);
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+                img.onerror = (err) => {
+                    URL.revokeObjectURL(objectUrl);
+                    reject(err);
+                };
+                img.src = objectUrl;
+            });
+        };
+
+        const addComment = () => {
+            if (!commentText.value.trim() && !commentsImagePreview.value) {
+                alert("请输入评论内容或上传图片！");
+                return;
+            }
+            
+            const post = selectedPost.value;
+            if (!post) return;
+            
+            isSubmittingComment.value = true;
+            
+            executeWithOSS(async (client) => {
+                try {
+                    let attachedImagePath = null;
+                    
+                    if (commentsImageFile.value) {
+                        const compressedBase64 = await compressCommentImage(commentsImageFile.value);
+                        const blob = base64ToBlob(compressedBase64);
+                        
+                        const postDate = new Date(post.timestamp);
+                        const YYYY = postDate.getFullYear();
+                        const MM = String(postDate.getMonth() + 1).padStart(2, '0');
+                        const monthId = `${YYYY}-${MM}`;
+                        
+                        const relativePath = `images/comments/${monthId}/c_${Date.now()}.webp`;
+                        const ossKey = `dandawang/public/${relativePath}`;
+                        
+                        await client.put(ossKey, blob);
+                        attachedImagePath = relativePath;
+                    }
+                    
+                    const commentObj = {
+                        id: "c_" + Date.now(),
+                        commenter: username.value || 'seikai',
+                        text: commentText.value.trim(),
+                        image: attachedImagePath,
+                        timestamp: Date.now()
+                    };
+                    
+                    const postDate = new Date(post.timestamp);
+                    const YYYY = postDate.getFullYear();
+                    const MM = String(postDate.getMonth() + 1).padStart(2, '0');
+                    const monthId = `${YYYY}-${MM}`;
+                    const jsonPath = `posts/${monthId}.json`;
+                    
+                    let monthPosts = [];
+                    const postsRes = await fetch(ASSET_BASE + jsonPath + '?t=' + Date.now());
+                    if (postsRes.ok) {
+                        monthPosts = await postsRes.json();
+                    }
+                    
+                    const targetPost = monthPosts.find(p => p.id === post.id);
+                    if (targetPost) {
+                        if (!targetPost.comments) targetPost.comments = [];
+                        targetPost.comments.push(commentObj);
+                        
+                        const monthJsonBlob = new Blob([JSON.stringify(monthPosts, null, 2)], { type: 'application/json' });
+                        await client.put(`dandawang/public/${jsonPath}`, monthJsonBlob);
+                        
+                        if (!post.comments) post.comments = [];
+                        post.comments.push(commentObj);
+                        
+                        const localPost = posts.value.find(p => p.id === post.id);
+                        if (localPost) {
+                            if (!localPost.comments) localPost.comments = [];
+                            localPost.comments.push(commentObj);
+                        }
+                    }
+                    
+                    commentText.value = '';
+                    clearCommentImage();
+                    
+                    setTimeout(() => {
+                        const commentsArea = document.querySelector('.detail-view');
+                        if (commentsArea) {
+                            commentsArea.scrollTop = commentsArea.scrollHeight;
+                        }
+                    }, 100);
+                    
+                } catch (e) {
+                    console.error("发表评论失败", e);
+                    alert("评论发表失败，请重试！");
+                } finally {
+                    isSubmittingComment.value = false;
+                }
+            });
+        };
+
+        const getAvatarUrl = (user) => {
+            const cleanUser = (user || 'seikai').toLowerCase();
+            return `public/avatars/${cleanUser}.webp`;
         };
 
         const base64ToBlob = (base64Str) => {
@@ -899,7 +1232,9 @@ createApp({
                     images: finalImages,
                     customGridData,
                     customRows,
-                    layout_config: customGridData // 兼容老的字段
+                    layout_config: customGridData, // 兼容老的字段
+                    publisher: username.value || 'seikai',
+                    comments: []
                 };
                 
                 // 4. 追加到本月列表开头
@@ -942,12 +1277,9 @@ createApp({
 
         const submitPost = () => {
             if (!canSubmit.value) return;
-            
-            if (!ossClient.value) {
-                showSecPwdModal.value = true;
-            } else {
+            executeWithOSS(() => {
                 syncPostToOSS();
-            }
+            });
         };
 
         onMounted(() => {
@@ -1028,6 +1360,19 @@ createApp({
             secPassword,
             isSyncingToOSS,
             verifySecPassword,
+            favorites,
+            isFavorited,
+            toggleFavorite,
+            showDeleteDropdown,
+            deletePost,
+            commentText,
+            commentsImageFile,
+            commentsImagePreview,
+            isSubmittingComment,
+            handleCommentImageSelect,
+            clearCommentImage,
+            addComment,
+            getAvatarUrl,
             handleVideoUploadPlaceholder: () => {
                 alert("视频上传功能正在开发中，敬请期待！");
             }

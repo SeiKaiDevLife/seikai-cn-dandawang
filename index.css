@@ -1664,3 +1664,371 @@ body {
   color: rgba(255, 255, 255, 0.7);
   line-height: 1.5;
 }
+
+/* ==========================================================================
+   全新详情页改版与评论互动样式
+   ========================================================================== */
+
+/* 头部固定导航栏 */
+.detail-header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 600px;
+  height: 60px;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* 顶部媒体区下移，防止被头部遮挡 */
+.detail-media-area {
+  margin-top: 60px;
+  width: 100%;
+}
+
+.header-back-btn,
+.header-more-btn {
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.header-back-btn:hover,
+.header-more-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.header-back-btn:active,
+.header-more-btn:active {
+  transform: scale(0.95);
+}
+
+.header-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.header-user-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+  text-transform: capitalize;
+}
+
+.header-actions {
+  position: relative;
+}
+
+/* 下拉删除菜单 */
+.detail-actions-dropdown {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  width: 140px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 120;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dropdown-item.delete-action {
+  color: #ff4d4f;
+}
+
+.dropdown-item.delete-action:hover {
+  background: #fff1f0;
+}
+
+.dropdown-item.disabled-action {
+  color: #bfbfbf;
+  cursor: not-allowed;
+}
+
+/* 详情内容下间距，防止被底部操作栏遮挡 */
+.detail-content {
+  padding-bottom: 110px;
+}
+
+/* 评论模块样式 */
+.detail-comments-section {
+  margin-top: 24px;
+  padding: 20px 16px 0;
+  border-top: 1px solid #f1f3f5;
+}
+
+.comments-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 16px;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.comment-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.comment-content-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.comment-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.comment-username {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: capitalize;
+}
+
+.comment-time {
+  font-size: 0.7rem;
+  color: #999;
+}
+
+.comment-text {
+  font-size: 0.88rem;
+  color: #333;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.comment-attached-img-box {
+  margin-top: 6px;
+}
+
+.comment-attached-img {
+  max-height: 120px;
+  max-width: 160px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: zoom-in;
+  transition: transform 0.2s;
+}
+
+.comment-attached-img:hover {
+  transform: scale(1.02);
+}
+
+.no-comments-placeholder {
+  text-align: center;
+  color: #aaa;
+  font-size: 0.85rem;
+  padding: 30px 0;
+}
+
+/* 底部固定操作栏 */
+.detail-footer {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 600px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 10px 16px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comment-input-box {
+  flex: 1;
+  background: #f1f3f5;
+  border-radius: 20px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  height: 38px;
+}
+
+.comment-input-box input {
+  width: 100%;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.comment-input-box input::placeholder {
+  color: #bbb;
+}
+
+.footer-actions-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  color: #666;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.footer-btn:hover {
+  background: #f1f3f5;
+  color: #333;
+}
+
+.footer-btn.action-fav.active {
+  color: #ff9f43;
+}
+
+.comment-submit-btn {
+  background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-orange) 100%);
+  color: white;
+  border: none;
+  border-radius: 18px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(255, 159, 67, 0.2);
+  transition: all 0.2s;
+  flex-shrink: 0;
+  height: 32px;
+}
+
+.comment-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(255, 159, 67, 0.3);
+}
+
+.comment-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* 图片上传预览区 */
+.comment-img-preview-bar {
+  display: flex;
+  padding: 4px 0;
+  border-bottom: 1px dashed #e9ecef;
+}
+
+.comment-img-preview-card {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.comment-img-preview-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.clear-preview-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: #fff;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.clear-preview-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
