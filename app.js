@@ -1518,9 +1518,11 @@ createApp({
                     customRows = customGridRows.value;
                 } else if (publishMode.value === 'video') {
                     const videoFile = publishVideoFile.value;
+                    const ts = Date.now();
                     const ext = videoFile.name.split('.').pop() || 'mp4';
-                    relativeVideoPath = `${folderPath}/video.${ext}`;
-                    const ossKey = `dandawang/public/${relativeVideoPath}`;
+                    const rawPath = `video/raw/${ts}.${ext}`;
+                    relativeVideoPath = `video/compress/${ts}.mp4`;
+                    const ossKey = `dandawang/public/${rawPath}`;
                     
                     uploadProgress.value = 0;
                     // 分片上传支持进度条和大文件稳定上传
@@ -1588,6 +1590,7 @@ createApp({
                     content: publishContent.value.trim(),
                     images: finalImages,
                     video: relativeVideoPath || undefined,
+                    videoRaw: publishMode.value === 'video' ? `video/raw/${Date.now()}.${publishVideoFile.value?.name.split('.').pop() || 'mp4'}` : undefined,
                     customGridData,
                     customRows,
                     layout_config: customGridData, // 兼容老的字段
@@ -1640,6 +1643,43 @@ createApp({
             });
         };
 
+        const handleVideoCoverError = async (e, post) => {
+            if (e.target.dataset.fallbackState) return; 
+
+            if (!post.videoRaw) {
+                e.target.dataset.fallbackState = 'invalid';
+                e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23f1f2f6"/><text x="50%" y="45%" text-anchor="middle" font-size="16" fill="%23a4b0be">视频资源已失效</text><text x="50%" y="55%" text-anchor="middle" font-size="12" fill="%23a4b0be">可能格式不支持或已删除</text></svg>';
+                return;
+            }
+
+            e.target.dataset.fallbackState = 'checking';
+            try {
+                const rawSnapshotUrl = getVideoSnapshotUrl(post.videoRaw, post.hash, 'normal-cover');
+                const res = await fetch(rawSnapshotUrl, { method: 'HEAD' });
+                
+                if (res.ok) {
+                    e.target.dataset.fallbackState = 'transcoding';
+                    e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23fff5f5"/><text x="50%" y="45%" text-anchor="middle" font-size="16" fill="%23ff7675">努力转码中...</text><text x="50%" y="55%" text-anchor="middle" font-size="12" fill="%23ff7675">稍后即可播放</text></svg>';
+                } else {
+                    e.target.dataset.fallbackState = 'invalid';
+                    e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23f1f2f6"/><text x="50%" y="45%" text-anchor="middle" font-size="16" fill="%23a4b0be">视频资源已失效</text><text x="50%" y="55%" text-anchor="middle" font-size="12" fill="%23a4b0be">可能格式不支持或已删除</text></svg>';
+                }
+            } catch (err) {
+                e.target.dataset.fallbackState = 'invalid';
+                e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23f1f2f6"/><text x="50%" y="45%" text-anchor="middle" font-size="16" fill="%23a4b0be">视频资源已失效</text><text x="50%" y="55%" text-anchor="middle" font-size="12" fill="%23a4b0be">可能格式不支持或已删除</text></svg>';
+            }
+        };
+
+        const handleVideoPlayerError = (e, post) => {
+            if (e.target.dataset.fallbackState) return; 
+            e.target.dataset.fallbackState = 'true';
+            if (post.videoRaw) {
+                // 如果转码还没好，强行播放原画质兜底
+                e.target.src = ASSET_BASE + post.videoRaw;
+                e.target.load();
+            }
+        };
+
         // 监听视口宽度变化，防抖后重新分配（distributePosts 内部自行判断列数）
         let resizeTimeout = null;
         const handleResize = () => {
@@ -1688,6 +1728,8 @@ createApp({
             openPost,
             closePost,
             selectedPost,
+            handleVideoCoverError,
+            handleVideoPlayerError,
             currentSlideIndex,
             onSliderScroll,
             sliderRef,

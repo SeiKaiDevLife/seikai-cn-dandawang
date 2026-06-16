@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=90">
+    <link rel="stylesheet" href="index.css?v=91">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -182,7 +182,7 @@
                             </div>
                             <!-- 视频封面 -->
                             <div class="post-cover post-video-cover" v-if="post.layout === 'video'" @click="openPost(post, 0)">
-                                <img :src="getVideoSnapshotUrl(post.video, post.hash, 'normal-cover')" loading="lazy">
+                                <img :src="getVideoSnapshotUrl(post.video, post.hash, 'normal-cover')" loading="lazy" @error="handleVideoCoverError($event, post)">
                                 <div class="video-play-icon">
                                     <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
                                 </div>
@@ -274,6 +274,7 @@
                                 controls
                                 preload="metadata"
                                 :poster="getVideoSnapshotUrl(selectedPost.video, selectedPost.hash, 'detail')"
+                                @error="handleVideoPlayerError($event, selectedPost)"
                             ></video>
                         </div>
                         
@@ -624,6 +625,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=90"></script>
+    <script src="app.js?v=91"></script>
 </body>
 </html>
