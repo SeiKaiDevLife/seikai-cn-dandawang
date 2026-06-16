@@ -399,6 +399,49 @@ createApp({
             return finalUrl;
         };
 
+        const getVideoSnapshotUrl = (videoPath, hash, sizeCategory = null) => {
+            if (!videoPath) return '';
+            
+            let finalUrl = ASSET_BASE + videoPath + '?v=' + hash;
+            
+            if (sizeCategory) {
+                let displayWidthCss = 300; // 默认回退值
+                
+                const winWidth = window.innerWidth;
+                const containerWidth = Math.min(winWidth, 1200) - 32;
+                const colWidthCss = (containerWidth - 16) / 2; // 双列瀑布流单列宽度
+                
+                if (sizeCategory === 'normal-cover') {
+                    displayWidthCss = colWidthCss;
+                } else if (sizeCategory === 'detail') {
+                    displayWidthCss = Math.min(winWidth, 600);
+                }
+                
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                const targetPhysicalWidth = Math.round(displayWidthCss * dpr);
+                
+                let matchedWidth = null;
+                for (const bucket of RESIZE_BUCKETS) {
+                    if (targetPhysicalWidth <= bucket) {
+                        matchedWidth = bucket;
+                        break;
+                    }
+                }
+                
+                if (!matchedWidth) {
+                    matchedWidth = RESIZE_BUCKETS[RESIZE_BUCKETS.length - 1];
+                }
+                
+                if (matchedWidth) {
+                    finalUrl += `&x-oss-process=video/snapshot,t_1000,f_jpg,w_${matchedWidth}`;
+                }
+            } else {
+                finalUrl += `&x-oss-process=video/snapshot,t_1000,f_jpg`;
+            }
+            
+            return finalUrl;
+        };
+
         let currentRenderId = 0;
         let lastColCount = 0;
         const distributePosts = async () => {
@@ -424,6 +467,18 @@ createApp({
                     try {
                         // 在 distributePosts 中仅仅需要加载图片提取宽高比例，使用最小的 grid-cover 即可，节省网络流量
                         const imgUrl = getImageUrlWithHash(post.images[0], post.hash, 'grid-cover');
+                        ratio = await new Promise((resolve) => {
+                            const img = new Image();
+                            img.onload = () => resolve(img.height / img.width);
+                            img.onerror = () => resolve(1);
+                            img.src = imgUrl;
+                        });
+                    } catch (e) {
+                        ratio = 1;
+                    }
+                } else if (post.layout === 'video' && post.video) {
+                    try {
+                        const imgUrl = getVideoSnapshotUrl(post.video, post.hash, 'grid-cover');
                         ratio = await new Promise((resolve) => {
                             const img = new Image();
                             img.onload = () => resolve(img.height / img.width);
@@ -507,6 +562,13 @@ createApp({
         };
 
         const closePost = () => {
+            if (detailVideoPlayerRef.value) {
+                try {
+                    detailVideoPlayerRef.value.pause();
+                } catch(e) {
+                    console.warn("暂停视频播放失败", e);
+                }
+            }
             selectedPost.value = null;
         };
 
@@ -523,6 +585,14 @@ createApp({
         const publishContent = ref('');
         const publishImages = ref([]);
         const fileInputRef = ref(null);
+
+        // 视频发布相关状态
+        const publishVideoFile = ref(null);
+        const publishVideoUrl = ref('');
+        const publishVideoLoading = ref(false);
+        const uploadProgress = ref(0);
+        const videoFileInputRef = ref(null);
+        const detailVideoPlayerRef = ref(null);
 
         // 自定义网格状态
         const customGridRows = ref(3);
@@ -710,6 +780,18 @@ createApp({
             publishTitle.value = '';
             publishContent.value = '';
             publishImages.value = [];
+            
+            // 视频状态重置
+            publishVideoFile.value = null;
+            if (publishVideoUrl.value) {
+                URL.revokeObjectURL(publishVideoUrl.value);
+            }
+            publishVideoUrl.value = '';
+            publishVideoLoading.value = false;
+            uploadProgress.value = 0;
+            if (videoFileInputRef.value) {
+                videoFileInputRef.value.value = '';
+            }
         };
 
         const triggerImageUpload = () => {
@@ -797,6 +879,67 @@ createApp({
             publishImages.value.splice(idx, 1);
         };
 
+        const triggerVideoUpload = () => {
+            if (videoFileInputRef.value) videoFileInputRef.value.click();
+        };
+
+        const handleVideoSelect = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // 限制文件大小为 100MB
+            if (file.size > 100 * 1024 * 1024) {
+                alert("视频文件大小不能超过 100MB！");
+                e.target.value = '';
+                return;
+            }
+            
+            // 视频预载和时长检测
+            publishVideoLoading.value = true;
+            const tempUrl = URL.createObjectURL(file);
+            const tempVideo = document.createElement('video');
+            tempVideo.preload = 'metadata';
+            tempVideo.src = tempUrl;
+            
+            tempVideo.onloadedmetadata = () => {
+                URL.revokeObjectURL(tempUrl);
+                const duration = tempVideo.duration;
+                if (duration > 60.5) { // 允许少许误差
+                    alert(`视频时长不能超过 60 秒！当前时长：${Math.round(duration)} 秒`);
+                    publishVideoFile.value = null;
+                    publishVideoUrl.value = '';
+                    publishVideoLoading.value = false;
+                    e.target.value = '';
+                } else {
+                    publishVideoFile.value = file;
+                    publishVideoUrl.value = URL.createObjectURL(file);
+                    publishVideoLoading.value = false;
+                }
+            };
+            
+            tempVideo.onerror = () => {
+                URL.revokeObjectURL(tempUrl);
+                alert("解析视频失败，可能是该视频格式在当前浏览器中不被支持！");
+                publishVideoFile.value = null;
+                publishVideoUrl.value = '';
+                publishVideoLoading.value = false;
+                e.target.value = '';
+            };
+        };
+
+        const removeVideo = () => {
+            publishVideoFile.value = null;
+            if (publishVideoUrl.value) {
+                URL.revokeObjectURL(publishVideoUrl.value);
+            }
+            publishVideoUrl.value = '';
+            publishVideoLoading.value = false;
+            uploadProgress.value = 0;
+            if (videoFileInputRef.value) {
+                videoFileInputRef.value.value = '';
+            }
+        };
+
         const normalDragIndex = ref(null);
         const normalDragCurrentIndex = ref(null);
 
@@ -850,6 +993,9 @@ createApp({
             if (!publishTitle.value.trim() || !publishContent.value.trim()) return false;
             if (publishMode.value === 'custom') {
                 return customGridState.value === 'fill-images' && customGridSlots.value.every(s => s.image !== null && !s.loading);
+            }
+            if (publishMode.value === 'video') {
+                return publishVideoFile.value !== null && !publishVideoLoading.value;
             }
             return publishImages.value.length > 0 && publishImages.value.every(img => !img.loading);
         });
@@ -1001,7 +1147,7 @@ createApp({
                 try {
                     const postId = post.id;
                     
-                    // 1. 删除帖子图片
+                    // 1. 删除帖子图片/视频
                     if (post.images && post.images.length > 0) {
                         for (const imgPath of post.images) {
                             if (!imgPath.startsWith('data:')) {
@@ -1011,6 +1157,13 @@ createApp({
                                     console.warn(`删除图片失败: ${imgPath}`, e);
                                 }
                             }
+                        }
+                    }
+                    if (post.video) {
+                        try {
+                            await client.delete(`dandawang/public/${post.video}`);
+                        } catch (e) {
+                            console.warn(`删除视频失败: ${post.video}`, e);
                         }
                     }
                     
@@ -1272,6 +1425,7 @@ createApp({
                 let finalImages = [];
                 let customGridData = null;
                 let customRows = null;
+                let relativeVideoPath = '';
                 
                 if (publishMode.value === 'custom') {
                     const sortedSlots = [...customGridSlots.value].sort((a, b) => {
@@ -1295,6 +1449,19 @@ createApp({
                     finalImages = uploadedPaths.filter(p => p !== undefined);
                     customGridData = sortedSlots;
                     customRows = customGridRows.value;
+                } else if (publishMode.value === 'video') {
+                    const videoFile = publishVideoFile.value;
+                    const ext = videoFile.name.split('.').pop() || 'mp4';
+                    relativeVideoPath = `${folderPath}/video.${ext}`;
+                    const ossKey = `dandawang/public/${relativeVideoPath}`;
+                    
+                    uploadProgress.value = 0;
+                    // 分片上传支持进度条和大文件稳定上传
+                    await ossClient.value.multipartUpload(ossKey, videoFile, {
+                        progress: (p) => {
+                            uploadProgress.value = Math.round(p * 100);
+                        }
+                    });
                 } else {
                     const uploadPromises = publishImages.value.map(async (img, idx) => {
                         const blob = base64ToBlob(img.url);
@@ -1353,6 +1520,7 @@ createApp({
                     title: publishTitle.value.trim(),
                     content: publishContent.value.trim(),
                     images: finalImages,
+                    video: relativeVideoPath || undefined,
                     customGridData,
                     customRows,
                     layout_config: customGridData, // 兼容老的字段
@@ -1467,6 +1635,16 @@ createApp({
             publishContent,
             publishImages,
             fileInputRef,
+            publishVideoFile,
+            publishVideoUrl,
+            publishVideoLoading,
+            uploadProgress,
+            videoFileInputRef,
+            detailVideoPlayerRef,
+            triggerVideoUpload,
+            handleVideoSelect,
+            removeVideo,
+            getVideoSnapshotUrl,
             customGridRows,
             customGridSlots,
             customGridState,
@@ -1525,7 +1703,7 @@ createApp({
             viewFullPostFromPhoto,
             showHomeDropdown,
             handleVideoUploadPlaceholder: () => {
-                alert("视频上传功能正在开发中，敬请期待！");
+                startPublish('video');
             }
         };
     }
