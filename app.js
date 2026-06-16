@@ -2,6 +2,45 @@ const { createApp, ref, onMounted } = Vue;
 
 const CORRECT_HASH = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92";
 
+const PLACEHOLDER_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23fff5e6'/></svg>";
+
+const compressImageToWebp = (file) => {
+    return new Promise((resolve, reject) => {
+        const objectUrl = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+            
+            let width = img.width;
+            let height = img.height;
+            const maxLongEdge = 2160;
+            if (width > maxLongEdge || height > maxLongEdge) {
+                if (width > height) {
+                    height = Math.round((height * maxLongEdge) / width);
+                    width = maxLongEdge;
+                } else {
+                    width = Math.round((width * maxLongEdge) / height);
+                    height = maxLongEdge;
+                }
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            const webpDataUrl = canvas.toDataURL('image/webp', 0.85);
+            resolve(webpDataUrl);
+        };
+        img.onerror = (err) => {
+            URL.revokeObjectURL(objectUrl);
+            reject(err);
+        };
+        img.src = objectUrl;
+    });
+};
+
 createApp({
     setup() {
         const isLoggedIn = ref(localStorage.getItem('isLoggedIn') === 'true');
@@ -276,7 +315,7 @@ createApp({
             let slots = [];
             for (let r = 0; r < customGridRows.value; r++) {
                 for (let c = 0; c < 3; c++) {
-                    slots.push({ id: `r${r}c${c}`, r, c, rowSpan: 1, colSpan: 1, image: null, selected: false });
+                    slots.push({ id: `r${r}c${c}`, r, c, rowSpan: 1, colSpan: 1, image: null, selected: false, loading: false });
                 }
             }
             customGridSlots.value = slots;
@@ -357,9 +396,12 @@ createApp({
                     const sourceSlot = customGridSlots.value.find(s => s.id === dragImgId.value);
                     const targetSlot = customGridSlots.value.find(s => s.id === dragImgCurrentId.value);
                     if (sourceSlot && targetSlot) {
-                        const temp = sourceSlot.image;
+                        const tempImg = sourceSlot.image;
+                        const tempLoad = sourceSlot.loading;
                         sourceSlot.image = targetSlot.image;
-                        targetSlot.image = temp;
+                        sourceSlot.loading = targetSlot.loading;
+                        targetSlot.image = tempImg;
+                        targetSlot.loading = tempLoad;
                     }
                 }
                 setTimeout(() => {
@@ -410,7 +452,8 @@ createApp({
                 rowSpan: maxR - minR + 1,
                 colSpan: maxC - minC + 1,
                 image: null,
-                selected: false
+                selected: false,
+                loading: false
             });
         };
 
@@ -420,7 +463,7 @@ createApp({
                 for (let c = slot.c; c < slot.c + slot.colSpan; c++) {
                     customGridSlots.value.push({
                         id: `r${r}c${c}_${Date.now()}`,
-                        r, c, rowSpan: 1, colSpan: 1, image: null, selected: false
+                        r, c, rowSpan: 1, colSpan: 1, image: null, selected: false, loading: false
                     });
                 }
             }
@@ -478,11 +521,19 @@ createApp({
                     }
                     
                     filesToProcess.forEach((file, index) => {
-                        const reader = new FileReader();
-                        reader.onload = (ev) => {
-                            targetSlots[index].image = ev.target.result;
-                        };
-                        reader.readAsDataURL(file);
+                        const slot = targetSlots[index];
+                        slot.loading = true;
+                        slot.image = PLACEHOLDER_SVG;
+                        
+                        compressImageToWebp(file).then(compressedUrl => {
+                            slot.image = compressedUrl;
+                            slot.loading = false;
+                        }).catch(err => {
+                            console.error("图片压缩失败", err);
+                            slot.image = null;
+                            slot.loading = false;
+                            alert("图片处理失败，请稍后重试");
+                        });
                     });
                     currentUploadSlotId.value = null;
                 }
@@ -496,11 +547,23 @@ createApp({
                 }
 
                 filesToProcess.forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        publishImages.value.push(ev.target.result);
+                    const placeholderItem = {
+                        url: PLACEHOLDER_SVG,
+                        loading: true
                     };
-                    reader.readAsDataURL(file);
+                    publishImages.value.push(placeholderItem);
+                    
+                    compressImageToWebp(file).then(compressedUrl => {
+                        placeholderItem.url = compressedUrl;
+                        placeholderItem.loading = false;
+                    }).catch(err => {
+                        console.error("图片压缩失败", err);
+                        const idx = publishImages.value.indexOf(placeholderItem);
+                        if (idx > -1) {
+                            publishImages.value.splice(idx, 1);
+                        }
+                        alert("图片处理失败，请稍后重试");
+                    });
                 });
                 e.target.value = '';
             }
@@ -562,9 +625,9 @@ createApp({
         const canSubmit = Vue.computed(() => {
             if (!publishTitle.value.trim() || !publishContent.value.trim()) return false;
             if (publishMode.value === 'custom') {
-                return customGridState.value === 'fill-images' && customGridSlots.value.every(s => s.image !== null);
+                return customGridState.value === 'fill-images' && customGridSlots.value.every(s => s.image !== null && !s.loading);
             }
-            return publishImages.value.length > 0;
+            return publishImages.value.length > 0 && publishImages.value.every(img => !img.loading);
         });
 
         const submitPost = () => {
@@ -585,7 +648,7 @@ createApp({
                 customGridData = sortedSlots;
                 customRows = customGridRows.value;
             } else {
-                finalImages = [...publishImages.value];
+                finalImages = publishImages.value.map(img => img.url);
             }
 
             const newPost = {
@@ -602,6 +665,11 @@ createApp({
 
             // 添加到所有推文列表头部
             posts.value.unshift(newPost);
+            
+            // 增加发布数量
+            if (meta.value) {
+                meta.value.totalPosts = (meta.value.totalPosts || 0) + 1;
+            }
             
             // 如果在搜索模式下，或者直接刷新列表
             if (isSearchActive.value) {
@@ -687,7 +755,10 @@ createApp({
             onNormalTouchMove,
             onNormalTouchEnd,
             canSubmit,
-            submitPost
+            submitPost,
+            handleVideoUploadPlaceholder: () => {
+                alert("视频上传功能正在开发中，敬请期待！");
+            }
         };
     }
 }).mount('#app');

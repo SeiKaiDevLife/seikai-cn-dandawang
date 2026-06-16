@@ -1464,19 +1464,78 @@ body {
 .fab-mini-btn:hover { filter: brightness(1.1); }
 
 /* Toe Positions forming a beautiful paw around the massive pad */
-.fab-menu.is-open .fab-action.action-3 { transform: translate(-70px, -2px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-2 { transform: translate(-48px, -48px) scale(1) !important; }
-.fab-menu.is-open .fab-action.action-1 { transform: translate(-2px, -70px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-3 { transform: translate(-72px, 4px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-2 { transform: translate(-54px, -46px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-1 { transform: translate(-14px, -70px) scale(1) !important; }
+.fab-menu.is-open .fab-action.action-4 { transform: translate(34px, -62px) scale(1) !important; }
 
 /* Toe Rotations */
 .fab-action.action-3 .fab-mini-btn { transform: rotate(-85deg); }
-.fab-action.action-2 .fab-mini-btn { transform: rotate(-45deg); }
-.fab-action.action-1 .fab-mini-btn { transform: rotate(-5deg); }
+.fab-action.action-2 .fab-mini-btn { transform: rotate(-50deg); }
+.fab-action.action-1 .fab-mini-btn { transform: rotate(-15deg); }
+.fab-action.action-4 .fab-mini-btn { transform: rotate(20deg); }
 
 /* Hover scale combined with rotation */
 .fab-action.action-3 .fab-mini-btn:hover { transform: rotate(-85deg) scale(1.1); }
-.fab-action.action-2 .fab-mini-btn:hover { transform: rotate(-45deg) scale(1.1); }
-.fab-action.action-1 .fab-mini-btn:hover { transform: rotate(-5deg) scale(1.1); }
+.fab-action.action-2 .fab-mini-btn:hover { transform: rotate(-50deg) scale(1.1); }
+.fab-action.action-1 .fab-mini-btn:hover { transform: rotate(-15deg) scale(1.1); }
+.fab-action.action-4 .fab-mini-btn:hover { transform: rotate(20deg) scale(1.1); }
 
 /* Ensure legacy elements are hidden */
 .fab-paw-closed-state { display: none !important; }
+
+/* ========================================= */
+/* 图片上传中占位与加载效果 */
+/* ========================================= */
+.slot-loading-overlay, .item-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  gap: 6px;
+  backdrop-filter: blur(2px);
+}
+
+.slot-loading-overlay span, .item-loading-overlay span {
+  font-size: 0.75rem;
+  color: var(--accent-orange);
+  font-weight: 600;
+  user-select: none;
+}
+
+/* 菊花加载动画 */
+.loading-spinner, .loading-spinner-small {
+  border: 3px solid #ffe8cc;
+  border-top: 3px solid var(--accent-orange);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-spinner {
+  width: 28px;
+  height: 28px;
+}
+
+.loading-spinner-small {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+  border-top-width: 2px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 上传加载中的禁用交互 */
+.image-preview-item.is-loading, .custom-slot.is-loading {
+  pointer-events: none;
+}
