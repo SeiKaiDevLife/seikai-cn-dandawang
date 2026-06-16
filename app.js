@@ -5,6 +5,17 @@ const CORRECT_HASH = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923a
 // 密文常量：使用 window.encryptOSSCredentials 生成后粘贴到这里
 const ENCRYPTED_CREDENTIALS = "";
 
+// 挂载辅助加密函数，方便生成密文（全局作用域）
+window.encryptOSSCredentials = (ak, sk, pwd) => {
+    const payload = JSON.stringify({ id: ak, secret: sk });
+    const encrypted = CryptoJS.AES.encrypt(payload, pwd).toString();
+    console.log("======== 加密成功 ========");
+    console.log("请复制下方密文并填入 app.js 中的 ENCRYPTED_CREDENTIALS 常量中：");
+    console.log(encrypted);
+    console.log("==========================");
+    return encrypted;
+};
+
 const PLACEHOLDER_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23fff5e6'/></svg>";
 
 const compressImageToWebp = (file) => {
@@ -56,17 +67,6 @@ createApp({
         const secPassword = ref('');
         const isSyncingToOSS = ref(false);
         const ossClient = ref(null);
-        
-        // 挂载辅助加密函数，方便生成密文
-        window.encryptOSSCredentials = (ak, sk, pwd) => {
-            const payload = JSON.stringify({ id: ak, secret: sk });
-            const encrypted = CryptoJS.AES.encrypt(payload, pwd).toString();
-            console.log("======== 加密成功 ========");
-            console.log("请复制下方密文并填入 app.js 中的 ENCRYPTED_CREDENTIALS 常量中：");
-            console.log(encrypted);
-            console.log("==========================");
-            return encrypted;
-        };
         
         const meta = ref({ totalPosts: 0, months: [] });
         const posts = ref([]);
