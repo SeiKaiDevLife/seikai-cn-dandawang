@@ -20,34 +20,45 @@ const PLACEHOLDER_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2
 
 const compressImageToWebp = (file) => {
     return new Promise((resolve, reject) => {
+        console.log("开始压缩文件:", file.name, "大小:", (file.size / 1024 / 1024).toFixed(2) + "MB");
         const objectUrl = URL.createObjectURL(file);
         const img = new Image();
         img.onload = () => {
-            URL.revokeObjectURL(objectUrl);
-            
-            let width = img.width;
-            let height = img.height;
-            const maxLongEdge = 2160;
-            if (width > maxLongEdge || height > maxLongEdge) {
-                if (width > height) {
-                    height = Math.round((height * maxLongEdge) / width);
-                    width = maxLongEdge;
-                } else {
-                    width = Math.round((width * maxLongEdge) / height);
-                    height = maxLongEdge;
+            try {
+                console.log("图片文件成功加载，原始尺寸:", img.width, "x", img.height);
+                URL.revokeObjectURL(objectUrl);
+                
+                let width = img.width;
+                let height = img.height;
+                const maxLongEdge = 2160;
+                if (width > maxLongEdge || height > maxLongEdge) {
+                    if (width > height) {
+                        height = Math.round((height * maxLongEdge) / width);
+                        width = maxLongEdge;
+                    } else {
+                        width = Math.round((width * maxLongEdge) / height);
+                        height = maxLongEdge;
+                    }
                 }
+                
+                console.log("计算出缩放尺寸:", width, "x", height);
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                console.log("正在将 canvas 导出为 WebP Base64...");
+                const webpDataUrl = canvas.toDataURL('image/webp', 0.85);
+                console.log("WebP 导出成功，数据大小:", (webpDataUrl.length / 1024 / 1024).toFixed(2) + "MB");
+                resolve(webpDataUrl);
+            } catch (err) {
+                console.error("Canvas 渲染或导出发生异常:", err);
+                reject(err);
             }
-            
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            
-            const webpDataUrl = canvas.toDataURL('image/webp', 0.85);
-            resolve(webpDataUrl);
         };
         img.onerror = (err) => {
+            console.error("图片文件加载错误(img.onerror):", err);
             URL.revokeObjectURL(objectUrl);
             reject(err);
         };
