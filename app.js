@@ -1395,6 +1395,65 @@ createApp({
             });
         };
 
+        const deleteComment = (comment) => {
+            if (!comment) return;
+            const post = selectedPost.value;
+            if (!post) return;
+            
+            // 校验权限：只能删除自己发表的评论
+            if (comment.commenter !== username.value) {
+                alert("无删除权限！只能删除自己发表的评论");
+                return;
+            }
+            
+            if (!confirm("确认删除这条评论吗？此操作无法恢复！")) return;
+            
+            executeWithOSS(async (client) => {
+                isSubmittingComment.value = true;
+                try {
+                    // 1. 如果评论有附加的图片，需要删除图片
+                    if (comment.image) {
+                        try {
+                            await client.delete(`dandawang/public/${comment.image}`);
+                        } catch (e) {
+                            console.warn(`删除评论图片失败: ${comment.image}`, e);
+                        }
+                    }
+                    
+                    // 2. 更新本月的 posts.json
+                    const postDate = new Date(post.timestamp);
+                    const YYYY = postDate.getFullYear();
+                    const MM = String(postDate.getMonth() + 1).padStart(2, '0');
+                    const monthId = `${YYYY}-${MM}`;
+                    const jsonPath = `posts/${monthId}.json`;
+                    
+                    let monthPosts = [];
+                    const postsRes = await fetch(ASSET_BASE + jsonPath + '?t=' + Date.now());
+                    if (postsRes.ok) {
+                        monthPosts = await postsRes.json();
+                    }
+                    
+                    const targetPost = monthPosts.find(p => p.id === post.id);
+                    if (targetPost && targetPost.comments) {
+                        targetPost.comments = targetPost.comments.filter(c => c.id !== comment.id);
+                        
+                        const monthJsonBlob = new Blob([JSON.stringify(monthPosts, null, 2)], { type: 'application/json' });
+                        await client.put(`dandawang/public/${jsonPath}`, monthJsonBlob);
+                        
+                        // 3. 更新本地视图数据
+                        post.comments = post.comments.filter(c => c.id !== comment.id);
+                    }
+                    
+                    alert("评论已删除！");
+                } catch (e) {
+                    console.error("删除评论失败", e);
+                    alert("删除评论失败，请重试！");
+                } finally {
+                    isSubmittingComment.value = false;
+                }
+            });
+        };
+
         const getAvatarUrl = (user) => {
             const cleanUser = (user || 'seikai').toLowerCase();
             // 头像 CSS 尺寸约 32-50px，DPR 2 → 最大 100px 物理像素，取 bucket=300 保证质量与缓存命中
@@ -1695,6 +1754,7 @@ createApp({
             handleCommentImageSelect,
             clearCommentImage,
             addComment,
+            deleteComment,
             getAvatarUrl,
             currentTab,
             setTab,

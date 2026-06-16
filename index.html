@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氮氮的相册 | SeiKai & echoofmine</title>
-    <link rel="stylesheet" href="index.css?v=85">
+    <link rel="stylesheet" href="index.css?v=86">
     <!-- Vue 3 CDN (无构建纯前端核心) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- CryptoJS CDN (用于密码哈希和 AES 加密) -->
@@ -318,8 +318,16 @@
                                     <img :src="getAvatarUrl(comment.commenter)" class="comment-avatar" alt="Avatar">
                                     <div class="comment-content-box">
                                         <div class="comment-header-row">
-                                            <span class="comment-username">{{ comment.commenter }}</span>
-                                            <span class="comment-time">{{ formatDate(comment.timestamp) }}</span>
+                                            <div class="comment-header-left">
+                                                <span class="comment-username">{{ comment.commenter }}</span>
+                                                <span class="comment-time">{{ formatDate(comment.timestamp) }}</span>
+                                            </div>
+                                            <button class="comment-delete-btn" v-if="comment.commenter === username" @click="deleteComment(comment)" title="删除评论">
+                                                <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                </svg>
+                                            </button>
                                         </div>
                                         <div class="comment-text" v-if="comment.text">{{ comment.text }}</div>
                                         <!-- 图片评论 -->
@@ -616,6 +624,6 @@
         </div>
     </div>
     <!-- 引入我们的主逻辑 -->
-    <script src="app.js?v=85"></script>
+    <script src="app.js?v=86"></script>
 </body>
 </html>

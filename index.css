@@ -2593,3 +2593,27 @@ body {
     height: 180px !important;
   }
 }
+
+.comment-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-delete-btn {
+  background: none;
+  border: none;
+  color: #adb5bd;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.comment-delete-btn:hover {
+  color: #fa5252;
+  background-color: rgba(250, 82, 82, 0.1);
+}
