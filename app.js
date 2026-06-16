@@ -887,6 +887,13 @@ createApp({
             const file = e.target.files[0];
             if (!file) return;
             
+            // 校验文件类型，只能是视频
+            if (!file.type.startsWith('video/')) {
+                alert("只能选择视频文件进行上传！");
+                e.target.value = '';
+                return;
+            }
+            
             // 限制文件大小为 100MB
             if (file.size > 100 * 1024 * 1024) {
                 alert("视频文件大小不能超过 100MB！");

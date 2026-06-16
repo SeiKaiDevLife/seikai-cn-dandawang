@@ -2579,3 +2579,17 @@ body {
   color: #bbb;
   margin-top: 4px;
 }
+
+/* 视频触发按钮宽度扩展 */
+.video-trigger {
+  width: 100% !important;
+  height: 180px !important;
+  aspect-ratio: auto !important;
+}
+
+@media (min-width: 600px) {
+  .video-trigger {
+    width: 100% !important;
+    height: 180px !important;
+  }
+}
