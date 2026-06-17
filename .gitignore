@@ -25,3 +25,6 @@ dist-ssr
 
 # Local npm cache
 .npm-cache
+
+# Antigravity artifacts
+.agy/
